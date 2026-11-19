@@ -1,0 +1,85 @@
+{
+  "campaign_name": "{{CAMPAIGN_NAME}}",
+  "vault_dir": "template-vault",
+  "atlas_collection": "Campaign",
+  "atlas_campaign_slug": "campaign",
+  "atlas_campaign_id": "00000000-0000-4000-8000-000000000001",
+  "grid_unit_type": "meters",
+  "grid_unit_distance": 1.5,
+  "party_level": 3,
+  "party": [
+    {
+      "name": "Mira",
+      "note": "Mira la Chierica",
+      "role": "Chierica",
+      "assetId": "token-demo-mira",
+      "imagePath": "atlas-vtt/assets/token_mira.webp",
+      "hp": 24,
+      "torch_in_dark": true,
+      "passives": {
+        "perception": 13,
+        "investigation": 10,
+        "insight": 15
+      }
+    },
+    {
+      "name": "Kael",
+      "note": "Kael il Ladro",
+      "role": "Ladro",
+      "assetId": "token-demo-kael",
+      "imagePath": "atlas-vtt/assets/token_kael.webp",
+      "hp": 21,
+      "torch_in_dark": false,
+      "passives": {
+        "perception": 11,
+        "investigation": 14,
+        "insight": 10
+      }
+    },
+    {
+      "name": "Bram",
+      "note": "Bram il Guerriero",
+      "role": "Guerriero",
+      "assetId": "token-demo-bram",
+      "imagePath": "atlas-vtt/assets/token_bram.webp",
+      "hp": 28,
+      "torch_in_dark": false,
+      "passives": {
+        "perception": 10,
+        "investigation": 9,
+        "insight": 12
+      }
+    }
+  ],
+  "fallback_tokens": {
+    "default": "atlas-vtt/assets/token_generic_fighter.webp",
+    "scout": "atlas-vtt/assets/token_generic_scout.webp",
+    "arcane": "atlas-vtt/assets/token_generic_arcane.webp"
+  },
+  "roll_table_presets": {
+    "demo-npc": {
+      "label": "PNG al Volo (Tabella Demo)",
+      "steps": [
+        ["Tabella Demo - Spunti e Incontri Rapidi.md", [0]]
+      ]
+    },
+    "demo-luogo": {
+      "label": "Dettaglio Ambientale / Edificio (Tabella Demo)",
+      "steps": [
+        ["Tabella Demo - Spunti e Incontri Rapidi.md", [1]]
+      ]
+    },
+    "demo-imprevisto": {
+      "label": "Incontro o Imprevisto Rapido (Tabella Demo)",
+      "steps": [
+        ["Tabella Demo - Spunti e Incontri Rapidi.md", [2]]
+      ]
+    },
+    "demo-scena": {
+      "label": "Scena Completa Improvvisata (PNG + Dettaglio + Imprevisto)",
+      "steps": [
+        ["Tabella Demo - Spunti e Incontri Rapidi.md", [0, 1, 2]]
+      ]
+    }
+  }
+}

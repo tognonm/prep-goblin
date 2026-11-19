@@ -1,0 +1,25 @@
+{
+  "id": "map-gl-demo_vicolo_oakhaven",
+  "name": "Demo - Vicolo di Oakhaven",
+  "mapFilePath": "atlas-vtt/assets/demo_vicolo_oakhaven.webp",
+  "tags": [
+    "griglia-lampo"
+  ],
+  "collection": "Campaign",
+  "createdAt": 1795102062672,
+  "modifiedAt": 1795102062672,
+  "atlasRecord": {
+    "format": 1,
+    "type": "map",
+    "name": "Demo - Vicolo di Oakhaven",
+    "mapFilePath": "atlas-vtt/assets/demo_vicolo_oakhaven.webp",
+    "collection": "Campaign",
+    "tags": [
+      "griglia-lampo"
+    ],
+    "thumbnailPath": "atlas-vtt/assets/thumbnails/demo_vicolo_oakhaven-thumb.webp",
+    "id": "map-gl-demo_vicolo_oakhaven",
+    "createdAt": 1795102062672,
+    "modifiedAt": 1795102062672
+  }
+}

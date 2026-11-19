@@ -1,0 +1,24 @@
+{
+  "campaignId": "00000000-0000-4000-8000-000000000001",
+  "campaignName": "{{CAMPAIGN_NAME}}",
+  "characters": [
+    {
+      "id": "token-demo-mira",
+      "name": "Mira",
+      "notePath": "Campagna/Giocatori/Mira la Chierica.md",
+      "hp": { "current": 24, "max": 24 }
+    },
+    {
+      "id": "token-demo-kael",
+      "name": "Kael",
+      "notePath": "Campagna/Giocatori/Kael il Ladro.md",
+      "hp": { "current": 21, "max": 21 }
+    },
+    {
+      "id": "token-demo-bram",
+      "name": "Bram",
+      "notePath": "Campagna/Giocatori/Bram il Guerriero.md",
+      "hp": { "current": 28, "max": 28 }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "atlasRecord": {
+    "format": 1,
+    "type": "token",
+    "id": "token-demo-kael",
+    "name": "Kael",
+    "collection": "Campaign",
+    "imagePath": "atlas-vtt/assets/token_kael.webp",
+    "thumbnailPath": "atlas-vtt/assets/thumbnails/token_kael-thumb.webp",
+    "showRing": true,
+    "playerCharacter": true,
+    "tags": ["pc", "party"]
+  }
+}

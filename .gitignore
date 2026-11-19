@@ -1,0 +1,33 @@
+# OS & Temp
+.DS_Store
+**/.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+*.bak
+
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Obsidian Local State & Cache
+**/.obsidian/workspace*
+**/.obsidian/core-plugins-migration.json
+**/.obsidian/sync-conflict-*
+**/.obsidian/graph.json
+.trash/
+**/.trash/
+
+# Scratch / Preview Outputs
+scratch/
+*.verify.png
+*.grid_check.png
+
+# Copyrighted Rulebooks & Private Sources (NEVER commit)
+Fonti/
+Sources/
+Manuals/
+Archive/

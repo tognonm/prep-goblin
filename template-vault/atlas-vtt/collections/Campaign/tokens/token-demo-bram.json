@@ -1,0 +1,14 @@
+{
+  "atlasRecord": {
+    "format": 1,
+    "type": "token",
+    "id": "token-demo-bram",
+    "name": "Bram",
+    "collection": "Campaign",
+    "imagePath": "atlas-vtt/assets/token_bram.webp",
+    "thumbnailPath": "atlas-vtt/assets/thumbnails/token_bram-thumb.webp",
+    "showRing": true,
+    "playerCharacter": true,
+    "tags": ["pc", "party"]
+  }
+}

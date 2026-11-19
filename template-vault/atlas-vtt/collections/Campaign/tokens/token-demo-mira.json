@@ -1,0 +1,14 @@
+{
+  "atlasRecord": {
+    "format": 1,
+    "type": "token",
+    "id": "token-demo-mira",
+    "name": "Mira",
+    "collection": "Campaign",
+    "imagePath": "atlas-vtt/assets/token_mira.webp",
+    "thumbnailPath": "atlas-vtt/assets/thumbnails/token_mira-thumb.webp",
+    "showRing": true,
+    "playerCharacter": true,
+    "tags": ["pc", "party"]
+  }
+}
