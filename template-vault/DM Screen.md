@@ -1,65 +1,65 @@
 ---
 title: "DM Screen"
 icon: "🛡️"
-tags: [campagna, dm-screen, master]
-tipo: "Dashboard"
-visibilita: "master"
-stato: "pronto"
+tags: [campaign, dm-screen, master]
+type: "Dashboard"
+visibility: "dm-only"
+status: "ready"
 ---
 
 # 🛡️ DM Screen — {{CAMPAIGN_NAME}}
 
-> [!TIP] **Avvio Rapido di Sessione**
-> 1. Apri [[Stato del mondo]] per data in-game, posizione e orologi attivi.
-> 2. Tieni a portata [[Registro Improvvisazioni]] per annotare PNG, locali e scene nate al volo.
-> 3. Su **Atlas VTT `0.16.0`**, premi **`Tab`** per aprire la Linked Note della scena e tieni premuto **`H`** per *Lighting Peek*.
+> [!TIP] **Quick Session Launch**
+> 1. Open [[World State]] for in-game date, party location, and active faction clocks.
+> 2. Keep [[Improv Log]] handy to stage improvised NPCs, venues, and throwaway battlemaps.
+> 3. Inside **Atlas VTT `0.16.0`**, press **`Tab`** to toggle the scene Linked Note and hold **`H`** for *Lighting Peek*.
 
 ---
 
-## 👥 Party & Passive Pre-Calcolate *(Esempio Liv. 3)*
+## 👥 Party & Pre-Calculated Passives *(Example Lv. 3)*
 
-| PG | Ruolo | Percezione Passiva | Indagare Passivo | Intuizione Passiva | PF Max |
+| PC | Role | Passive Perception | Passive Investigation | Passive Insight | Max HP |
 | :--- | :--- | :---: | :---: | :---: | :---: |
-| [[Mira la Chierica\|Mira]] | Chierica *(Torcia)* | **13** | 10 | **15** | 24 |
-| [[Kael il Ladro\|Kael]] | Ladro | 11 | **14** | 10 | 21 |
-| [[Bram il Guerriero\|Bram]] | Guerriero | 10 | 9 | 12 | 28 |
+| [[Mira the Cleric\|Mira]] | Cleric *(Torchbearer)* | **13** | 10 | **15** | 24 |
+| [[Kael the Rogue\|Kael]] | Rogue | 11 | **14** | 10 | 21 |
+| [[Bram the Fighter\|Bram]] | Fighter | 10 | 9 | 12 | 28 |
 
-- **Soglia Tiro Attivo:** Percezione **CD 14+**, Indagare **CD 15+**, Intuizione **CD 16+** (oppure qualsiasi azione fisica dichiarata).
-
----
-
-## 🧭 Pannelli Operativi della Campagna
-
-- 🌍 **Stato Attuale & Orologi:** [[Stato del mondo]]
-- 🎭 **Staging Live del Master:** [[Registro Improvvisazioni]]
-- 📜 **Diario & Archi:** [[Diario di Campagna]] | [[Archi Narrativi]]
-- 📌 **Quest Demo (Atlas Native):** [[Quest Demo - Il Carro Scomparso]]
-- 🏘️ **Luogo Demo (Doppio Livello):** [[Borgo di Oakhaven]]
-- 🗺️ **Dashboard Scena Demo Atlas:** [[Demo - Vicolo di Oakhaven]]
+- **Active Roll Thresholds:** Perception **DC 14+**, Investigation **DC 15+**, Insight **DC 16+** (or any declared physical interaction).
 
 ---
 
-## 🎲 Tiri Rapidi Live (Obsidian Dice Roller)
+## 🧭 Campaign Hubs
 
-- **PNG al Volo:** `dice: [[Tabella Demo - Spunti e Incontri Rapidi#^demo-png]]`
-- **Dettaglio di Luogo / Bottega:** `dice: [[Tabella Demo - Spunti e Incontri Rapidi#^demo-luogo]]`
-- **Incontro / Imprevisto Rapido:** `dice: [[Tabella Demo - Spunti e Incontri Rapidi#^demo-imprevisto]]`
-- **Tabella Completa:** [[Tabella Demo - Spunti e Incontri Rapidi]]
-
----
-
-## ⚔️ Bestiario Demo Rapido
-
-- [[Predone di Strada]] *(GS 1/8 — 11 PF, CA 12)*
-- [[Scheletro Sentinella]] *(GS 1/4 — 13 PF, CA 13)*
+- 🌍 **World State & Clocks:** [[World State]]
+- 🎭 **Live DM Staging Log:** [[Improv Log]]
+- 📜 **Chronicle & Story Arcs:** [[Campaign Log]] | [[Story Arcs]]
+- 📌 **Demo Quest (Atlas Native):** [[Demo Quest - The Missing Wagon]]
+- 🏘️ **Demo Location (Two-Level Model):** [[Oakhaven Village]]
+- 🗺️ **Demo Atlas Scene Dashboard:** [[Demo - Oakhaven Alley]]
 
 ---
 
-## 📏 Promemoria Meccaniche 5e
+## 🎲 Live Random Rolls (Obsidian Dice Roller)
 
-| Difficoltà Prova | CD | Copertura | Bonus |
+- **Quick NPC:** `dice: [[Demo Table - Quick Prompts and Encounters#^demo-npc]]`
+- **Location / Shop Detail:** `dice: [[Demo Table - Quick Prompts and Encounters#^demo-location]]`
+- **Quick Road Encounter:** `dice: [[Demo Table - Quick Prompts and Encounters#^demo-encounter]]`
+- **Full Demo Table:** [[Demo Table - Quick Prompts and Encounters]]
+
+---
+
+## ⚔️ Quick Demo Bestiary
+
+- [[Road Raider]] *(CR 1/8 — 11 HP, AC 12)*
+- [[Skeleton Sentry]] *(CR 1/4 — 13 HP, AC 13)*
+
+---
+
+## 📏 5e Quick Reference
+
+| Check Difficulty | DC | Cover | Bonus |
 | :--- | :---: | :--- | :--- |
-| Facile | 10 | Mezza Copertura | `+2 CA` e `+2 TS Destrezza` |
-| Media | 15 | Tre Quarti | `+5 CA` e `+5 TS Destrezza` |
-| Difficile | 20 | Copertura Totale | Non bersagliabile direttamente |
-| Molto Difficile | 25 | Terreno Difficile | Costo di movimento doppio |
+| Easy | 10 | Half Cover | `+2 AC` and `+2 Dex saves` |
+| Medium | 15 | Three-Quarters | `+5 AC` and `+5 Dex saves` |
+| Hard | 20 | Total Cover | Cannot be targeted directly |
+| Very Hard | 25 | Difficult Terrain | Double movement cost |

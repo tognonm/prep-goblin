@@ -1,17 +1,17 @@
-# Regola per lo Stile Artistico (Generazione Immagini)
+# Visual Art Style Rule (Image & Token Generation)
 
-> **Personalizzabile:** Modifica il suffisso stilistico qui sotto se la tua campagna usa un'estetica diversa (es. high fantasy luminoso, pulp sword & sorcery, acquerello, gotico, sci-fantasy).
+> **Customizable:** Edit the default style suffix below if your campaign uses a different visual aesthetic (e.g., bright high fantasy, watercolor, pulp sword & sorcery, gothic horror, sci-fantasy).
 
-Tutte le illustrazioni di **{{CAMPAIGN_NAME}}** (ritratti PNG, mostri, token per Atlas VTT, oggetti e handout) seguono uno stile visivo coerente: **dark fantasy illustrato semi-realistico**, leggibile anche ridotto a dimensioni di token sul tavolo virtuale.
+All visual assets for **{{CAMPAIGN_NAME}}** (NPC portraits, monster art, Atlas VTT tokens, item illustrations, and visual handouts) follow a cohesive visual identity: **stylized semi-realistic dark fantasy illustration**, engineered to remain crisp and readable even when scaled down to tabletop token size.
 
-Quando generi immagini per il vault, accoda il seguente suffisso al prompt di generazione:
+Whenever generating images for the vault, append the following suffix to the generation prompt:
 
-**Suffisso stilistico predefinito:**
+**Default Style Suffix:**
 `Style: Stylized semi-realistic dark fantasy digital illustration, high-end RPG character portrait, crisp expressive lineart, painterly shading, rich textured fabrics and metals, deep saturated jewel tones, warm golden rim lighting, dramatic chiaroscuro, dark atmospheric medieval fantasy architecture in background. No photorealism, no anime, no 3D render.`
 
 ---
 
-## Linee Guida di Composizione
-- **Inquadratura Ritratti / Token:** Immagine quadrata (Aspect ratio `1:1`), busto dal petto in su, soggetto centrato a tre quarti con posa espressiva e silhouette chiara. Il soggetto e lo sfondo devono riempire l'intero riquadro (**non** disegnare cornici o anelli circolari interni: Atlas VTT applica autonomamente il token ring).
-- **Atmosfera & Luci:** Contrasto leggibile, luce calda di rim light o torcia che separa la figura dallo sfondo scuro.
-- **Oggetti e Handout:** Soggetto ben centrato su sfondo neutro/scuro, materiali riconoscibili (metallo inciso, pergamena, vetro, cuoio).
+## Composition Guidelines
+- **Portraits / VTT Tokens:** Square (`1:1`) aspect ratio, chest-up three-quarter view, subject centered with a bold readable silhouette. Subject and background should fill the entire square (**do NOT** draw circular borders or frames — Atlas VTT applies its own dynamic token ring).
+- **Lighting & Contrast:** Dramatic chiaroscuro with warm torchlight/candlelight rim lighting separating the figure from a dark muted backdrop.
+- **Items & Visual Handouts:** Centered on a clean dark atmospheric background with tactile materials (etched metal, weathered parchment, glowing gemstones, stitched leather).

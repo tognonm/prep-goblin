@@ -27,7 +27,7 @@ scratch/
 *.grid_check.png
 
 # Copyrighted Rulebooks & Private Sources (NEVER commit)
-Fonti/
 Sources/
 Manuals/
+Reference/
 Archive/

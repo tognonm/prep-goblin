@@ -4,14 +4,14 @@
   "atlas_collection": "Campaign",
   "atlas_campaign_slug": "campaign",
   "atlas_campaign_id": "00000000-0000-4000-8000-000000000001",
-  "grid_unit_type": "meters",
-  "grid_unit_distance": 1.5,
+  "grid_unit_type": "feet",
+  "grid_unit_distance": 5,
   "party_level": 3,
   "party": [
     {
       "name": "Mira",
-      "note": "Mira la Chierica",
-      "role": "Chierica",
+      "note": "Mira the Cleric",
+      "role": "Cleric",
       "assetId": "token-demo-mira",
       "imagePath": "atlas-vtt/assets/token_mira.webp",
       "hp": 24,
@@ -24,8 +24,8 @@
     },
     {
       "name": "Kael",
-      "note": "Kael il Ladro",
-      "role": "Ladro",
+      "note": "Kael the Rogue",
+      "role": "Rogue",
       "assetId": "token-demo-kael",
       "imagePath": "atlas-vtt/assets/token_kael.webp",
       "hp": 21,
@@ -38,8 +38,8 @@
     },
     {
       "name": "Bram",
-      "note": "Bram il Guerriero",
-      "role": "Guerriero",
+      "note": "Bram the Fighter",
+      "role": "Fighter",
       "assetId": "token-demo-bram",
       "imagePath": "atlas-vtt/assets/token_bram.webp",
       "hp": 28,
@@ -58,27 +58,27 @@
   },
   "roll_table_presets": {
     "demo-npc": {
-      "label": "PNG al Volo (Tabella Demo)",
+      "label": "Quick NPC (Demo Table)",
       "steps": [
-        ["Tabella Demo - Spunti e Incontri Rapidi.md", [0]]
+        ["Demo Table - Quick Prompts and Encounters.md", [0]]
       ]
     },
-    "demo-luogo": {
-      "label": "Dettaglio Ambientale / Edificio (Tabella Demo)",
+    "demo-location": {
+      "label": "Location / Shop Detail (Demo Table)",
       "steps": [
-        ["Tabella Demo - Spunti e Incontri Rapidi.md", [1]]
+        ["Demo Table - Quick Prompts and Encounters.md", [1]]
       ]
     },
-    "demo-imprevisto": {
-      "label": "Incontro o Imprevisto Rapido (Tabella Demo)",
+    "demo-encounter": {
+      "label": "Quick Road Encounter or Complication (Demo Table)",
       "steps": [
-        ["Tabella Demo - Spunti e Incontri Rapidi.md", [2]]
+        ["Demo Table - Quick Prompts and Encounters.md", [2]]
       ]
     },
-    "demo-scena": {
-      "label": "Scena Completa Improvvisata (PNG + Dettaglio + Imprevisto)",
+    "demo-scene": {
+      "label": "Full Improvised Scene (NPC + Location + Encounter)",
       "steps": [
-        ["Tabella Demo - Spunti e Incontri Rapidi.md", [0, 1, 2]]
+        ["Demo Table - Quick Prompts and Encounters.md", [0, 1, 2]]
       ]
     }
   }

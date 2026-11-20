@@ -5,19 +5,19 @@
     {
       "id": "token-demo-mira",
       "name": "Mira",
-      "notePath": "Campagna/Giocatori/Mira la Chierica.md",
+      "notePath": "Campaign/Players/Mira the Cleric.md",
       "hp": { "current": 24, "max": 24 }
     },
     {
       "id": "token-demo-kael",
       "name": "Kael",
-      "notePath": "Campagna/Giocatori/Kael il Ladro.md",
+      "notePath": "Campaign/Players/Kael the Rogue.md",
       "hp": { "current": 21, "max": 21 }
     },
     {
       "id": "token-demo-bram",
       "name": "Bram",
-      "notePath": "Campagna/Giocatori/Bram il Guerriero.md",
+      "notePath": "Campaign/Players/Bram the Fighter.md",
       "hp": { "current": 28, "max": 28 }
     }
   ]

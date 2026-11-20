@@ -1,0 +1,25 @@
+{
+  "id": "map-qb-demo_oakhaven_alley",
+  "name": "Demo - Oakhaven Alley",
+  "mapFilePath": "atlas-vtt/assets/demo_oakhaven_alley.webp",
+  "tags": [
+    "quick-battlemap"
+  ],
+  "collection": "Campaign",
+  "createdAt": 1795182741809,
+  "modifiedAt": 1795182741809,
+  "atlasRecord": {
+    "format": 1,
+    "type": "map",
+    "name": "Demo - Oakhaven Alley",
+    "mapFilePath": "atlas-vtt/assets/demo_oakhaven_alley.webp",
+    "collection": "Campaign",
+    "tags": [
+      "quick-battlemap"
+    ],
+    "thumbnailPath": "atlas-vtt/assets/thumbnails/demo_oakhaven_alley-thumb.webp",
+    "id": "map-qb-demo_oakhaven_alley",
+    "createdAt": 1795182741809,
+    "modifiedAt": 1795182741809
+  }
+}

@@ -1,67 +1,67 @@
-# Standard per Note di Scena, Luoghi e Dashboard di Atlas VTT (`< 32 KB`)
+# Location Notes, Scene Standards & Atlas VTT Dashboards (`< 32 KB`)
 
-Questo documento definisce le linee guida obbligatorie per la creazione e strutturazione delle note di luogo e delle DM Dashboard del vault, garantendo fluidità al tavolo e piena compatibilità con **Atlas VTT `0.16.0`**.
-
----
-
-## 1. Il Modello a Doppio Livello: Luogo vs Scena / Dashboard
-
-Nel vault distinguiamo chiaramente tra due livelli:
-1. **Nota di Luogo (`<Vault>/Luoghi/...`)**: Descrizione generale, storia, fazioni, diagrammi e collegamenti macroscopici del compendio. Nessun limite rigido di dimensione.
-2. **Dashboard di Scena (`<Vault>/atlas-vtt/collections/{{ATLAS_COLLECTION}}/notes/<Nome> - Dashboard.md`)**: Il modulo operativo ultra-compatto che il Master apre premendo **`Tab`** direttamente dentro Atlas VTT sulla mappa (Linked Note) e tramite i **Note Pin**.
+This rule defines the mandatory structure for location notes and operational DM Dashboards to ensure fast table play and full compatibility with **Atlas VTT `0.16.0`**.
 
 ---
 
-## 2. Vincolo Tecnico Hard: Limite 32 KB di Atlas VTT
-> [!IMPORTANT] Limite 32 KB (`32768 byte`)
-> Atlas VTT `0.16.0` ignora file Markdown di Dashboard, statblock o note collegate che superano **32 KB** (`32768 byte`).
-> - **Soglia operativa raccomandata:** Mantieni ogni DM Dashboard sotto i **30 KB** (idealmente tra `3 KB` e `24 KB`).
-> - **Verifica automatica:** Controlla sempre con `python .agents/skills/dungeon-e-mappe/scripts/atlas_scene_tools.py validate <scena.atlasmap> --dashboard <dashboard.md>` e `python scripts/lint_vault.py`.
+## 1. The Two-Level Model: Location Note vs. Scene Dashboard
+
+The vault strictly separates two complementary layers:
+1. **Compendium Location Note (`<Vault>/Locations/...`)**: Macro description, history, factions, diagrams, and campaign hooks. No strict byte limit.
+2. **Scene DM Dashboard (`<Vault>/atlas-vtt/collections/{{ATLAS_COLLECTION}}/notes/<Name> - Dashboard.md`)**: The ultra-lean tactical card opened inside Atlas VTT by pressing **`Tab`** (Linked Note) or clicking **Note Pins**.
 
 ---
 
-## 3. Requisiti Obbligatori per le Note di Luogo / Compendio
+## 2. Hard Technical Constraint: Atlas VTT 32 KB Limit
+> [!IMPORTANT] Hard 32 KB Limit (`32768 bytes`)
+> Atlas VTT `0.16.0` silently ignores linked notes, dashboards, or statblocks larger than **32 KB** (`32768 bytes`).
+> - **Recommended Target:** Keep every DM Dashboard strictly under **30 KB** (ideally `3 KB–24 KB`).
+> - **Automated Verification:** Always check with `python .agents/skills/dungeons-and-maps/scripts/atlas_scene_tools.py validate <scene.atlasmap> --dashboard <dashboard.md>` and `python scripts/lint_vault.py`.
 
-Ogni nota di luogo canonica creata o espansa dagli agenti contiene:
+---
 
-### A. Frontmatter e Visibilità Schermo
+## 3. Mandatory Sections for Canonical Location Notes
+
+Every canonical location note created or expanded in `<Vault>/Locations/` includes:
+
+### A. YAML Frontmatter & Screen Visibility
 ```yaml
 ---
-title: "Nome del Luogo"
+title: "Location Name"
 icon: "🗺️"
-tags: [luogo, insediamento]
-visibilita_mappa: "player" # player (condivisibile), master (solo DM), teatro_della_mente (senza battlemap)
-atlas_scene: "Nome Scena in Atlas" # opzionale
-atlas_dashboard: "[[Nome Dashboard]]" # opzionale
-stato: "bozza"
+tags: [location, settlement]
+map_visibility: "player" # player (shareable), dm-only, theater_of_the_mind
+atlas_scene: "Atlas Scene Name" # optional
+atlas_dashboard: "[[Dashboard Note Name]]" # optional
+status: "draft"
 ---
 ```
 
-### B. Banner di Quick Link (in cima alla nota)
+### B. Quick Link Banner (Top of Note)
 ```markdown
 > [!TIP] **Atlas VTT Quick Link**
-> 🗺️ **Scena Atlas:** `Nome Scena` | 🛡️ **Dashboard Operativa:** [[Nome Dashboard]]
+> 🗺️ **Atlas Scene:** `Scene Name` | 🛡️ **DM Dashboard:** [[Dashboard Note Name]]
 ```
 
-### C. Sezione "5 Secondi di Descrizione Sensoriale (Lettura per il DM)"
-Un paragrafo breve leggibile ad alta voce quando il party arriva:
-- **Vista:** Illuminazione, architettura, ombre e primo dettaglio notabile.
-- **Udito:** Suoni di fondo, rumori improvvisi, eco o silenzio anomalo.
-- **Olfatto / Atmosfera:** Odori caratteristici e temperatura.
+### C. "5-Second Sensory Read-Aloud"
+A concise evocative paragraph the DM can read verbatim when the party arrives:
+- **Sight:** Lighting, architecture, shadows, and first focal point.
+- **Sound:** Ambient noise, sudden sounds, echoes, or eerie silence.
+- **Smell / Atmosphere:** Signature scents and temperature.
 
-### D. 3 Contatti Rapidi Improvvisati
-Tre comparse pronte da giocare al volo se il party parla con qualcuno (solo se approvate dal Master o marcate come spunti opzionali):
-- Nome/ruolo, dettaglio visivo in 1 frase, cosa vuole, frase tipica.
+### D. 3 Improvised Quick Contacts
+Three minor bystanders ready for spontaneous roleplay (approved by the DM or clearly flagged as optional prompts):
+- Name/role, 1-sentence visual cue, what they want, and a signature quote.
 
-### E. Tabella Casuale `d6` (Obsidian Dice Roller)
-Una tabella `d6` di eventi o spunti rapidi attivabile con `` `dice: 1d6` ``.
+### E. Quick `d6` Random Table (Obsidian Dice Roller)
+A `d6` table of local happenings triggered with `` `dice: 1d6` ``.
 
 ---
 
-## 4. Requisiti per le Dashboard di Scena Atlas (`<Vault>/atlas-vtt/.../notes/`)
-Le Dashboard caricate come **Linked Note** in Atlas VTT devono essere sintetiche, leggibili al volo e **rigorosamente `< 30 KB`**:
-1. **Scheda Rapida di Sessione:** Tabella compatta con Livello Party, **Passive Pre-Calcolate dei PG** (`AGENTS.md` Regola 6), nemici presenti, CD principali e segreto chiave.
-2. **Guida Tattica alle Stanze con Titoli `### H3` Indicizzabili:**
-   - Ogni stanza o punto d'interesse collegato a un **Note Pin** sulla mappa deve avere un titolo `### <Etichetta>. <Nome>` (senza formattazione corsivo/grassetto nel titolo) **identico 1:1** all'ancora `#...` del `notePath` del pin.
-   - Annota ogni prova con **`⚡ [Passiva Automatica — Nome PG]`** oppure **`🎲 [Tiro Attivo — Abilità CD X]`**.
-3. **Statblock Inline 5e (o Link Diretti):** Blocchi ```` ```statblock ```` compatti per i nemici chiave (o link alle note in `<Vault>/Mostri/`), evitando duplicazioni inutili che gonfiano il file verso i 32 KB.
+## 4. Requirements for Atlas Scene Dashboards (`<Vault>/atlas-vtt/.../notes/`)
+Linked Notes inside Atlas VTT must stay scannable at a glance and **strictly `< 30 KB`**:
+1. **Quick Session Header:** Compact table with Party Level, **Pre-Calculated Party Passives** (`AGENTS.md` Rule 6), primary foes, key DCs, and core secret.
+2. **Tactical Room Guide with Indexable `### H3` Headings:**
+   - Every room or POI linked to a **Note Pin** must have an exact `### <Label>. <Room Name>` heading (no italic/bold formatting inside the heading text) matching the pin's `#...` anchor 1:1.
+   - Tag every check with **`⚡ [Automatic Passive — PC Name]`** or **`🎲 [Active Roll — Skill DC X]`**.
+3. **Compact Inline 5e Statblocks (or Direct Links):** Embed ```` ```statblock ```` blocks only for key foes (or link to `<Vault>/Monsters/`) to avoid bloating the file toward the 32 KB ceiling.

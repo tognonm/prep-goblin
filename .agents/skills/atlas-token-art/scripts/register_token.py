@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Register a square portrait/token image into an Atlas VTT 0.16.0 collection."""
+"""Register a square portrait/token image into an Atlas VTT 0.16.0 collection (Demiurge Core)."""
 from __future__ import annotations
 
 import argparse
 import json
-import os
 import random
 import string
 import sys
@@ -40,7 +39,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Register a token image for Atlas VTT 0.16.0.")
     ap.add_argument("image", help="Path to source image (PNG/JPG/WEBP)")
     ap.add_argument("--name", required=True, help="Display name in Atlas VTT")
-    ap.add_argument("--statblock", help="Relative statblock note path inside the vault (e.g. Mostri/Predone di Strada.md)")
+    ap.add_argument("--statblock", help="Relative statblock note path inside the vault (e.g. Monsters/Road Raider.md)")
     ap.add_argument("--tags", nargs="*", default=[])
     ap.add_argument("--collection", default=default_collection, help=f"Atlas collection name (default: {default_collection})")
     ap.add_argument("--vault", default=str(default_vault), help=f"Vault root path (default: {default_vault})")

@@ -1,0 +1,14 @@
+{
+  "atlasRecord": {
+    "format": 1,
+    "type": "token",
+    "id": "token-demo-skeleton",
+    "name": "Skeleton Sentry",
+    "collection": "Campaign",
+    "imagePath": "atlas-vtt/assets/token_generic_arcane.webp",
+    "thumbnailPath": "atlas-vtt/assets/thumbnails/token_generic_arcane-thumb.webp",
+    "statblockPath": "Monsters/Skeleton Sentry.md",
+    "showRing": true,
+    "tags": ["enemy", "undead"]
+  }
+}

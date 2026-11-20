@@ -1,0 +1,15 @@
+{
+  "mapPath": "atlas-vtt/collections/Campaign/scenes/Demo - Oakhaven Alley.atlasmap",
+  "atlasRecord": {
+    "format": 1,
+    "type": "scene",
+    "name": "Demo - Oakhaven Alley",
+    "collection": "Campaign",
+    "tags": [
+      "quick-battlemap"
+    ],
+    "id": "scene-qb-demo_oakhaven_alley",
+    "createdAt": 1795182741809,
+    "modifiedAt": 1795182741809
+  }
+}

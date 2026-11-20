@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Vault linter for Obsidian + Atlas VTT 0.16.0.
+"""Vault linter for Obsidian + Atlas VTT 0.16.0 (Demiurge Core).
 
 Checks:
 1. Valid YAML frontmatter in all Markdown notes.
-2. Broken [[wikilink]] references (ignoring links inside fenced code blocks).
+2. Broken [[wikilink]] references (ignoring links inside code blocks).
 3. Atlas VTT 0.16.0 hard 32 KB (32768-byte) file size limit for linked notes,
    dashboards, and monster statblocks.
 """
@@ -18,7 +18,7 @@ from pathlib import Path
 
 import yaml
 
-IGNORE_DIRS = {".git", ".obsidian", ".agents", "Fonti", "Sources", "Manuals", "Archive", "scripts", "_templates"}
+IGNORE_DIRS = {".git", ".obsidian", ".agents", "Sources", "Manuals", "Reference", "Archive", "scripts", "_templates"}
 ATLAS_HARD_LIMIT_BYTES = 32768
 ATLAS_WARN_LIMIT_BYTES = 30720
 FENCED_CODE_RE = re.compile(r"```.*?```", re.DOTALL)
@@ -49,7 +49,7 @@ def is_atlas_size_checked(rel_path: Path) -> bool:
     parts = [p.lower() for p in rel_path.parts]
     if "atlas-vtt" in parts and "notes" in parts:
         return True
-    if parts and parts[0] == "mostri":
+    if parts and parts[0] == "monsters":
         return True
     return False
 
