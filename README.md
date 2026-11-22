@@ -5,11 +5,22 @@
 [![CI](https://github.com/tognonm/prep-goblin/actions/workflows/ci.yml/badge.svg)](https://github.com/tognonm/prep-goblin/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg)](requirements.txt)
-[![Atlas VTT 0.16.0](https://img.shields.io/badge/Atlas%20VTT-0.16.0%20(schema%20v4)-7C3AED.svg)](https://github.com/atlas-vtt/atlas-vtt)
+
+<p>
+  <a href="https://atlas-vtt.dev/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://atlas-vtt.dev/brand/compatible-with-atlas-vtt-dark.svg" />
+      <source media="(prefers-color-scheme: light)" srcset="https://atlas-vtt.dev/brand/compatible-with-atlas-vtt-light.svg" />
+      <img alt="Compatible with Atlas VTT" src="https://atlas-vtt.dev/brand/compatible-with-atlas-vtt-light.svg" height="32" />
+    </picture>
+  </a>
+</p>
+
+> Prep Goblin is a community extension. It is not made, endorsed or supported by Atlas VTT or Atlas Online. For help or bug reports, please open an issue on **[GitHub Issues](https://github.com/tognonm/prep-goblin/issues)**.
 
 **Prep Goblin** is an open-source, local-first **agentic Dungeon Master framework** for running D&D 5e campaigns with **[Obsidian](https://obsidian.md/)** and **[Atlas VTT 0.16.0](https://github.com/atlas-vtt/atlas-vtt)**.
 
-It pairs strict narrative governance (**DM-as-Reviewer** — the AI never invents canon behind your back) with **10 modular agent skills**, **cross-IDE agent adapters**, **native Obsidian Bases**, a clean two-level vault architecture, and **11 tested Python CLI toolkits** covering 60-second campaign bootstrapping, instant procedural battlemaps, Atlas VTT scene auditing, encounter math, player spoiler firewalls, anti-canon-drift context packs, and audio/Discord transcript preprocessing.
+It pairs strict narrative governance (**DM-as-Reviewer** — the AI never invents canon behind your back) with **10 modular agent skills**, **cross-IDE agent adapters**, **native Obsidian Bases**, a clean two-level vault architecture, and **12 tested Python CLI toolkits** covering 60-second campaign bootstrapping, instant procedural battlemaps, Armarium-ready Wildcard packs, Atlas VTT scene auditing, encounter math, player spoiler firewalls, anti-canon-drift context packs, and audio/Discord transcript preprocessing.
 
 ---
 
@@ -28,7 +39,7 @@ From a single 2-second CLI command (`quick_battlemap.py`) to a validated **Atlas
 - **Multi-Agent IDE Support (`scripts/sync_agent_adapters.py`):** Works out of the box with **Antigravity**, **Codex**, **Claude Code** (`CLAUDE.md`), **Cursor** (`.cursor/rules/prep-goblin.mdc`), and **GitHub Copilot** (`.github/copilot-instructions.md`). All adapter bridges are auto-generated from `AGENTS.md` and `.agents/` as the single source of truth and drift-checked in CI.
 - **Zero-Overlap Skill Architecture (10 Modular Skills):** Distinct scopes for session prep, live improvisation, instant tactical battlemaps, canonical dungeon building, encounter balancing, statblocks, token art registration, audio/Discord transcript preprocessing, post-session recaps, and living-world faction clocks.
 - **Two-Level Vault Model (`< 32 KB` Atlas Safe) + Native Obsidian Bases:** Separates rich Lore/Location notes from ultra-lean Atlas VTT Linked Note Dashboards (`< 30 KB`, respecting Atlas VTT's hard 32 KB ceiling) with 1:1 `### H3` Note Pin anchors, **pre-calculated party passive checks** (`⚡ Automatic Passive` vs. `🎲 Active Roll`), and native Obsidian Bases (`Items/Loot.base` wired into Atlas `lootBases` and `Campaign/Campaign Board.base`).
-- **11 Tested Python CLI Toolkits:** Covering campaign setup, full Atlas vault linting, player spoiler firewall exports (Quartz / Discord / single Markdown), anti-canon-drift AI context packs, 5e encounter math (`2024` & `2014`), transcript cleaning/chunking, 8 procedural battlemap presets, Atlas wall/light auditing & dashboard scaffolding, live Markdown table rolling, and token registration.
+- **12 Tested Python CLI Toolkits:** Covering campaign setup, full Atlas vault linting, player spoiler firewall exports (Quartz / Discord / single Markdown), anti-canon-drift AI context packs, 5e encounter math (`2024` & `2014`), transcript cleaning/chunking, 8 procedural battlemap presets, party-agnostic Armarium Wildcard collection packs, Atlas wall/light auditing & dashboard scaffolding, live Markdown table rolling, and token registration.
 - **Ready-to-Open `template-vault/`:** 100% fictional, spoiler-free, copyright-safe starter vault complete with a DM Screen, Obsidian Bases, World State & Improv Staging Log, multi-compatible demo random table, fictional example party (`Mira`, `Kael`, `Bram`), and a pre-validated Atlas VTT demo scene (`Demo - Oakhaven Alley`).
 
 ---
@@ -88,11 +99,12 @@ flowchart LR
 
 ## Power-User CLI Toolkit
 
-All **11 Python CLI tools** use only Python 3.10+ stdlib plus `Pillow`, `numpy`, and `PyYAML`, run identically on Windows, macOS, and Linux, and are verified by automated `pytest` tests in CI.
+All **12 Python CLI tools** use only Python 3.10+ stdlib plus `Pillow`, `numpy`, and `PyYAML`, run identically on Windows, macOS, and Linux, and are verified by automated `pytest` tests in CI.
 
 | CLI Tool | Purpose | Key Command Example |
 | :--- | :--- | :--- |
 | **`scripts/init_campaign.py`** | **60-Second Setup Wizard:** Creates a custom campaign vault, UUID, collection, grid units (`feet`/`meters`), PC notes, monogram WebP tokens, and optional Wildcard maps. | `python scripts/init_campaign.py` |
+| **`scripts/build_wildcard_pack.py`** | **Armarium-Ready Wildcard Pack Builder:** Generates a party-agnostic Atlas VTT collection containing all 8 validated procedural Wildcard battlemaps (ready to export via Atlas VTT's *Asset Manager → Export collection* for the [Armarium](https://atlas-vtt.dev/armarium) or optional `.zip` archive). | `python scripts/build_wildcard_pack.py --out-vault scratch/wildcard-pack --zip scratch/prep-goblin-wildcards.zip` |
 | **`scripts/lint_vault.py`** | **Vault & Full Atlas Linter:** Audits YAML frontmatter, broken `[[wikilinks]]`, Atlas 32 KB limits, token `imagePath`/`statblockPath`, `.atlasmap` pin `#Heading` anchors, `Location` scene refs, and un-triaged `Improv Log.md` `review` rows. | `python scripts/lint_vault.py --strict-links --full-atlas` |
 | **`scripts/sync_agent_adapters.py`** | **Multi-Agent Adapter Sync:** Regenerates and drift-checks `CLAUDE.md`, `.cursor/rules/prep-goblin.mdc`, and `.github/copilot-instructions.md` from `AGENTS.md` and `.agents/`. | `python scripts/sync_agent_adapters.py --check` |
 | **`scripts/export_player_view.py`** | **Spoiler Firewall & Player Portal:** Exports a player-safe Quartz vault or single Markdown handout; strips `DM Secret`/`spoiler` callouts and `<!-- dm-only -->` blocks, excludes private folders & `visibility: dm-only` notes, sanitizes secret links, and runs an independent `--verify` leak audit. | `python scripts/export_player_view.py --out player-portal --format vault --verify` |
@@ -314,7 +326,7 @@ python -m pytest -v
 ## Credits & Acknowledgments
 
 - **[Obsidian](https://obsidian.md/)** — Local-first Markdown knowledge base powering the entire DM vault.
-- **[Atlas VTT](https://github.com/atlas-vtt/atlas-vtt)** ([atlas-vtt.dev](https://atlas-vtt.dev/)) — Open-source local-first Virtual Tabletop inside Obsidian that makes `.atlasmap` v4 scenes, dynamic lighting, linked dashboards, `lootBases`, and Player View possible.
+- **[Atlas VTT](https://github.com/atlas-vtt/atlas-vtt)** ([atlas-vtt.dev](https://atlas-vtt.dev/)) by **Fabian Urbanek** — Open-source local-first Virtual Tabletop inside Obsidian that makes `.atlasmap` v4 scenes, dynamic lighting, linked dashboards, `lootBases`, native `statblock-templates`, and Player View possible. *(Atlas VTT and Atlas Online are products by Fabian Urbanek; Prep Goblin is an independent community extension.)*
 - **[Obsidian TTRPG Community](https://github.com/Obsidian-TTRPG-Community)** — Maintainers of **[Fantasy Statblocks](https://github.com/Obsidian-TTRPG-Community/fantasy-statblocks)** and **[Dice Roller](https://github.com/Obsidian-TTRPG-Community/dice-roller)**.
 - **[Iconize](https://github.com/FlorianWoelki/obsidian-iconize)** & **[Extended Graph](https://github.com/ElsaTam/obsidian-extended-graph)** — Community Obsidian plugins for visual navigation and graph workflows.
 - **Systems Reference Document 5.1 (SRD 5.1)** by Wizards of the Coast LLC, licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/).

@@ -8,7 +8,7 @@ This rule defines operational conventions for AI agents interacting with the rec
 - **Purpose:** Visual rendering of D&D 5e statblocks and bestiary indexing inside Obsidian.
 - **Repository:** [Obsidian-TTRPG-Community/fantasy-statblocks](https://github.com/Obsidian-TTRPG-Community/fantasy-statblocks)
 - **Agent Rule:** Use ```` ```statblock ```` YAML blocks following the `statblock-5e` skill. Always include `statblock: inline` in the frontmatter of `<Vault>/Monsters/*.md` notes so Fantasy Statblocks indexes the creature automatically.
-- **Atlas VTT Integration:** Atlas reads these statblocks via `statblockPath` to auto-calculate initiative modifiers, show HP/AC, and power the *"In this fight"* filter.
+- **Atlas VTT Integration:** Atlas reads these statblocks via `statblockPath` to auto-calculate initiative modifiers, show HP/AC, and power the *"In this fight"* filter. *(Atlas VTT also supports native statblock templates stored under `<Vault>/atlas-vtt/statblock-templates`.)*
 
 ## 2. Obsidian Dice Roller (`obsidian-dice-roller`)
 - **Purpose:** Inline dice rolling and interactive random-table extraction directly inside Markdown notes.

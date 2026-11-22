@@ -584,3 +584,42 @@ def test_register_token_normalizes_windows_backslashes_in_json(tmp_path: Path) -
     assert rec["statblockPath"] == "Monsters/Road Raider.md"
     assert "\\" not in rec["imagePath"]
     assert "\\" not in rec["thumbnailPath"]
+
+
+def test_build_wildcard_pack_generates_8_validated_party_agnostic_scenes_and_zip(
+    tmp_path: Path,
+) -> None:
+    import zipfile
+
+    pack_vault = tmp_path / "wildcard_pack_vault"
+    zip_path = tmp_path / "prep-goblin-wildcards.zip"
+    script_pack = Path(__file__).resolve().parent.parent / "scripts" / "build_wildcard_pack.py"
+
+    res = run_cli(
+        script_pack,
+        "--out-vault",
+        pack_vault,
+        "--collection",
+        "Prep Goblin Wildcards",
+        "--units",
+        "feet",
+        "--zip",
+        zip_path,
+    )
+    assert res.returncode == 0, res.stdout + res.stderr
+    assert "All 8 scenes PASSED validate + audit-walls --strict." in res.stdout
+    assert zip_path.is_file() and zip_path.stat().st_size > 10_000
+
+    scenes_dir = pack_vault / "atlas-vtt" / "collections" / "Prep Goblin Wildcards" / "scenes"
+    scenes = sorted(scenes_dir.glob("Wildcard - *.atlasmap"))
+    assert len(scenes) == 8
+    for sc in scenes:
+        data = json.loads(sc.read_text(encoding="utf-8"))
+        # Party-agnostic pack must contain 0 PC tokens
+        assert data["state"]["objects"]["tokens"] == {}
+
+    with zipfile.ZipFile(zip_path, "r") as zf:
+        names = zf.namelist()
+        assert any(n.endswith("collection.json") for n in names)
+        assert sum(1 for n in names if n.endswith(".atlasmap")) == 8
+

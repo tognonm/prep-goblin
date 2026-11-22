@@ -8,7 +8,7 @@ description: >-
 
 # 5e Statblocks for Fantasy Statblocks & Atlas VTT `0.16.0`
 
-Atlas VTT `0.16.0` natively parses ```` ```statblock ```` blocks from **Fantasy Statblocks**, powering hover tooltips, direct dice rolling, and automatic initiative bonuses whenever `statblockPath` is linked on a token.
+Atlas VTT `0.16.0` natively parses ```` ```statblock ```` blocks from **Fantasy Statblocks** (as well as its own native statblock templates in `<Vault>/atlas-vtt/statblock-templates`), powering hover tooltips, direct dice rolling, and automatic initiative bonuses whenever `statblockPath` is linked on a token.
 
 ---
 
