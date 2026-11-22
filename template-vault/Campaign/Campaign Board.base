@@ -1,0 +1,60 @@
+filters:
+  and:
+    - 'file.ext == "md"'
+properties:
+  file.name:
+    displayName: "Name"
+  kind:
+    displayName: "Kind"
+  status:
+    displayName: "Status"
+  experience:
+    displayName: "XP"
+  location:
+    displayName: "Location"
+  rewards:
+    displayName: "Rewards"
+  class:
+    displayName: "Class"
+  level:
+    displayName: "Level"
+  passive_perception:
+    displayName: "Passive Perc."
+  passive_investigation:
+    displayName: "Passive Inv."
+  passive_insight:
+    displayName: "Passive Ins."
+views:
+  - type: table
+    name: "Active Quests"
+    filters:
+      and:
+        - 'note["atlas-type"] == "quest"'
+        - 'status != "done"'
+        - 'status != "failed"'
+    order:
+      - file.name
+      - kind
+      - status
+      - experience
+      - location
+      - rewards
+    sort:
+      - property: status
+        direction: ASC
+  - type: table
+    name: "Party Roster"
+    filters:
+      and:
+        - 'file.inFolder("Campaign/Players")'
+    order:
+      - file.name
+      - class
+      - level
+      - passive_perception
+      - passive_investigation
+      - passive_insight
+      - status
+    sort:
+      - property: file.name
+        direction: ASC

@@ -6,8 +6,8 @@
     "quick-battlemap"
   ],
   "collection": "Campaign",
-  "createdAt": 1795182741809,
-  "modifiedAt": 1795182741809,
+  "createdAt": 1795186982125,
+  "modifiedAt": 1795186982125,
   "atlasRecord": {
     "format": 1,
     "type": "map",
@@ -19,7 +19,7 @@
     ],
     "thumbnailPath": "atlas-vtt/assets/thumbnails/demo_oakhaven_alley-thumb.webp",
     "id": "map-qb-demo_oakhaven_alley",
-    "createdAt": 1795182741809,
-    "modifiedAt": 1795182741809
+    "createdAt": 1795186982125,
+    "modifiedAt": 1795186982125
   }
 }

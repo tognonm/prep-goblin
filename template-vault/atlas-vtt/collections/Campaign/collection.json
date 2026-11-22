@@ -16,6 +16,8 @@
         "index": 2
       }
     ],
-    "lootBases": []
+    "lootBases": [
+      "Items/Loot.base"
+    ]
   }
 }

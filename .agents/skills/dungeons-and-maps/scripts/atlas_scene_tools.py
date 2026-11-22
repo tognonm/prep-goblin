@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import sys
 from collections import deque
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -55,7 +57,8 @@ def resolve_vault_path(rel_or_abs: str, vault_root: Path) -> str:
         return rel_or_abs
     if os.path.exists(rel_or_abs):
         return os.path.abspath(rel_or_abs)
-    candidate = vault_root / rel_or_abs.replace("/", os.sep)
+    norm_rel = rel_or_abs.replace("\\", "/").lstrip("/")
+    candidate = vault_root / norm_rel.replace("/", os.sep)
     if candidate.exists():
         return str(candidate)
     return rel_or_abs
@@ -370,8 +373,9 @@ def cmd_validate(args) -> int:
         st["exploredMask"] = None
         st["exploredEdits"] = 0
         st["diceLog"] = []
-        with open(map_path, "w", encoding="utf-8") as f:
+        with open(map_path, "w", encoding="utf-8", newline="\n") as f:
             json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+            f.write("\n")
         print("Reset exploredMask, exploredEdits, and diceLog.")
 
     for w in warnings:
@@ -381,6 +385,524 @@ def cmd_validate(args) -> int:
     if errors:
         return 1
     print("Validation PASSED.")
+    return 0
+
+
+def _segments_overlap_collinear(
+    a1: tuple[float, float],
+    a2: tuple[float, float],
+    b1: tuple[float, float],
+    b2: tuple[float, float],
+    tol: float = 1.0,
+) -> float:
+    """Return overlap length (> 0) if two non-degenerate segments are collinear and overlap."""
+    la = math.hypot(a2[0] - a1[0], a2[1] - a1[1])
+    lb = math.hypot(b2[0] - b1[0], b2[1] - b1[1])
+    if la < 1.0 or lb < 1.0:
+        return 0.0
+    ux, uy = (a2[0] - a1[0]) / la, (a2[1] - a1[1]) / la
+    # Check parallelism (|sin(theta)| <= 0.02, ~1.1 deg)
+    cross = abs(ux * (b2[1] - b1[1]) - uy * (b2[0] - b1[0])) / lb
+    if cross > 0.02:
+        return 0.0
+    # Perpendicular distance of B endpoints to infinite line through A
+    perp1 = abs((b1[0] - a1[0]) * (-uy) + (b1[1] - a1[1]) * ux)
+    perp2 = abs((b2[0] - a1[0]) * (-uy) + (b2[1] - a1[1]) * ux)
+    if perp1 > tol or perp2 > tol:
+        return 0.0
+    t1 = (b1[0] - a1[0]) * ux + (b1[1] - a1[1]) * uy
+    t2 = (b2[0] - a1[0]) * ux + (b2[1] - a1[1]) * uy
+    lo, hi = (t1, t2) if t1 <= t2 else (t2, t1)
+    overlap = min(la, hi) - max(0.0, lo)
+    return overlap if overlap > tol else 0.0
+
+
+def _segments_intersect(
+    a1: tuple[float, float],
+    a2: tuple[float, float],
+    b1: tuple[float, float],
+    b2: tuple[float, float],
+    eps: float = 1e-6,
+) -> bool:
+    """Return True if closed 2D segments a1-a2 and b1-b2 intersect (crossing, T, or shared vertex)."""
+    if (
+        max(a1[0], a2[0]) + eps < min(b1[0], b2[0])
+        or max(b1[0], b2[0]) + eps < min(a1[0], a2[0])
+        or max(a1[1], a2[1]) + eps < min(b1[1], b2[1])
+        or max(b1[1], b2[1]) + eps < min(a1[1], a2[1])
+    ):
+        return False
+
+    def orient(p: tuple[float, float], q: tuple[float, float], r: tuple[float, float]) -> float:
+        return (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
+
+    def on_seg(p: tuple[float, float], q: tuple[float, float], r: tuple[float, float]) -> bool:
+        return (
+            min(p[0], r[0]) - eps <= q[0] <= max(p[0], r[0]) + eps
+            and min(p[1], r[1]) - eps <= q[1] <= max(p[1], r[1]) + eps
+        )
+
+    o1 = orient(a1, a2, b1)
+    o2 = orient(a1, a2, b2)
+    o3 = orient(b1, b2, a1)
+    o4 = orient(b1, b2, a2)
+
+    if ((o1 > eps and o2 < -eps) or (o1 < -eps and o2 > eps)) and (
+        (o3 > eps and o4 < -eps) or (o3 < -eps and o4 > eps)
+    ):
+        return True
+    if abs(o1) <= eps and on_seg(a1, b1, a2):
+        return True
+    if abs(o2) <= eps and on_seg(a1, b2, a2):
+        return True
+    if abs(o3) <= eps and on_seg(b1, a1, b2):
+        return True
+    if abs(o4) <= eps and on_seg(b1, a2, b2):
+        return True
+    return False
+
+
+def cmd_audit_walls(args) -> int:
+    vault_root = Path(args.vault).resolve() if args.vault else detect_default_vault(args.atlasmap)
+    map_path = resolve_vault_path(args.atlasmap, vault_root)
+    with open(map_path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    st = data.get("state") or {}
+    objs = st.get("objects") or {}
+    walls_dict = objs.get("walls") or {}
+    lights_dict = objs.get("lights") or {}
+
+    gap_threshold = float(args.gap_threshold)
+    light_clearance = float(args.light_clearance)
+
+    degenerate: list[str] = []
+    duplicates: list[str] = []
+    near_gaps: list[str] = []
+    tight_lights: list[str] = []
+
+    wall_items: list[tuple[str, tuple[float, float], tuple[float, float], float]] = []
+    for wid, w in walls_dict.items():
+        p1 = (float(w["p1"]["x"]), float(w["p1"]["y"]))
+        p2 = (float(w["p2"]["x"]), float(w["p2"]["y"]))
+        seg_len = math.hypot(p2[0] - p1[0], p2[1] - p1[1])
+        if seg_len < 1.0:
+            degenerate.append(
+                f"{wid}: zero-length/degenerate wall (len={seg_len:.2f}px at ({p1[0]:.1f}, {p1[1]:.1f}))"
+            )
+        wall_items.append((wid, p1, p2, seg_len))
+
+    valid_walls = [item for item in wall_items if item[3] >= 1.0]
+    n = len(valid_walls)
+
+    # 1. Cluster endpoints within 1.0 px (Union-Find) to determine vertex connectivity
+    ep_coords: list[tuple[float, float]] = []
+    for _, p1, p2, _ in valid_walls:
+        ep_coords.append(p1)
+        ep_coords.append(p2)
+
+    parent = list(range(2 * n))
+
+    def find(u: int) -> int:
+        while parent[u] != u:
+            parent[u] = parent[parent[u]]
+            u = parent[u]
+        return u
+
+    def union(u: int, v: int) -> None:
+        ru, rv = find(u), find(v)
+        if ru != rv:
+            parent[rv] = ru
+
+    for u in range(2 * n):
+        ux, uy = ep_coords[u]
+        for v in range(u + 1, 2 * n):
+            if math.hypot(ux - ep_coords[v][0], uy - ep_coords[v][1]) <= 1.0:
+                union(u, v)
+
+    # Group distinct wall indices per vertex cluster
+    cluster_walls: dict[int, set[int]] = {}
+    for e_idx in range(2 * n):
+        root = find(e_idx)
+        cluster_walls.setdefault(root, set()).add(e_idx // 2)
+
+    # 2. Detect collinear overlapping duplicates + build wall adjacency (vertices, T-junctions, X-junctions)
+    wall_adj: list[set[int]] = [set() for _ in range(n)]
+    sealed_ep: list[bool] = [False] * (2 * n)
+
+    for e_idx in range(2 * n):
+        if len(cluster_walls[find(e_idx)]) >= 2:
+            sealed_ep[e_idx] = True
+
+    for i in range(n):
+        wid_a, a1, a2, _ = valid_walls[i]
+        for j in range(i + 1, n):
+            wid_b, b1, b2, _ = valid_walls[j]
+
+            ov = _segments_overlap_collinear(a1, a2, b1, b2, tol=1.0)
+            if ov > 1.0:
+                duplicates.append(
+                    f"{wid_a} <-> {wid_b}: duplicate/overlapping collinear wall segments ({ov:.1f}px overlap)"
+                )
+                wall_adj[i].add(j)
+                wall_adj[j].add(i)
+                continue
+
+            # Check shared vertex cluster
+            connected = (
+                find(2 * i) == find(2 * j)
+                or find(2 * i) == find(2 * j + 1)
+                or find(2 * i + 1) == find(2 * j)
+                or find(2 * i + 1) == find(2 * j + 1)
+            )
+
+            # Check valid T-junction sealing (endpoint sitting directly on another wall <= 1.0 px)
+            if pt_seg_dist(a1[0], a1[1], b1[0], b1[1], b2[0], b2[1]) <= 1.0:
+                sealed_ep[2 * i] = True
+                connected = True
+            if pt_seg_dist(a2[0], a2[1], b1[0], b1[1], b2[0], b2[1]) <= 1.0:
+                sealed_ep[2 * i + 1] = True
+                connected = True
+            if pt_seg_dist(b1[0], b1[1], a1[0], a1[1], a2[0], a2[1]) <= 1.0:
+                sealed_ep[2 * j] = True
+                connected = True
+            if pt_seg_dist(b2[0], b2[1], a1[0], a1[1], a2[0], a2[1]) <= 1.0:
+                sealed_ep[2 * j + 1] = True
+                connected = True
+
+            # Check exact segment-segment crossing (X-junction)
+            if not connected and _segments_intersect(a1, a2, b1, b2):
+                connected = True
+
+            if connected:
+                wall_adj[i].add(j)
+                wall_adj[j].add(i)
+
+    # 3. Test ONLY open / unsealed degree-1 endpoints against non-incident walls (catches both corner & T-junction cracks)
+    short_curve_limit = 2.0 * gap_threshold
+    best_pair_gaps: dict[tuple[int, int], tuple[float, str]] = {}
+
+    for i in range(n):
+        wid_a, a1, a2, len_a = valid_walls[i]
+        # Exclude self, all 1-hop connected/crossing walls, and 2-hop walls along a short chained curve
+        excluded = {i} | wall_adj[i]
+        if len_a <= short_curve_limit:
+            for nb in wall_adj[i]:
+                if valid_walls[nb][3] <= short_curve_limit:
+                    excluded |= wall_adj[nb]
+
+        for local_idx, pt in ((0, a1), (1, a2)):
+            e_idx = 2 * i + local_idx
+            if sealed_ep[e_idx]:
+                continue
+            for j in range(n):
+                if j in excluded:
+                    continue
+                wid_b, b1, b2, _ = valid_walls[j]
+                d = pt_seg_dist(pt[0], pt[1], b1[0], b1[1], b2[0], b2[1])
+                if 1.0 < d <= gap_threshold:
+                    pair_key = (i, j) if i < j else (j, i)
+                    ep_dist_min = min(
+                        math.hypot(pt[0] - b1[0], pt[1] - b1[1]),
+                        math.hypot(pt[0] - b2[0], pt[1] - b2[1]),
+                    )
+                    gap_kind = "corner" if abs(ep_dist_min - d) <= 1.0 else "T-junction"
+                    desc = (
+                        f"{wid_a} open endpoint ({pt[0]:.1f}, {pt[1]:.1f}) -> {wid_b}: "
+                        f"near-miss {gap_kind} gap of {d:.1f}px (potential light leak)"
+                    )
+                    prev = best_pair_gaps.get(pair_key)
+                    if prev is None or d < prev[0]:
+                        best_pair_gaps[pair_key] = (d, desc)
+
+    for _, (_, desc) in sorted(best_pair_gaps.items()):
+        near_gaps.append(desc)
+
+    for lid, lt in lights_dict.items():
+        lx, ly = float(lt["x"]), float(lt["y"])
+        if valid_walls:
+            nearest_wid, nearest_dist = min(
+                (
+                    (wid, pt_seg_dist(lx, ly, p1[0], p1[1], p2[0], p2[1]))
+                    for wid, p1, p2, _ in valid_walls
+                ),
+                key=lambda x: x[1],
+            )
+            if nearest_dist < light_clearance:
+                tight_lights.append(
+                    f"{lid} ({lx:.1f}, {ly:.1f}) is only {nearest_dist:.1f}px from {nearest_wid} (< {light_clearance:.0f}px)"
+                )
+
+    total_issues = len(degenerate) + len(duplicates) + len(near_gaps) + len(tight_lights)
+    print(f"Wall Audit: {Path(map_path).name}")
+    print(
+        f"  Walls: {len(walls_dict)} | Lights: {len(lights_dict)} | "
+        f"Gap threshold: {gap_threshold:.1f}px | Light clearance: {light_clearance:.1f}px"
+    )
+    print(
+        f"  Findings: {total_issues} total "
+        f"(degenerate={len(degenerate)}, duplicate={len(duplicates)}, "
+        f"near-gaps={len(near_gaps)}, tight-lights={len(tight_lights)})"
+    )
+
+    if degenerate:
+        print("\n[Degenerate / Zero-Length Walls]")
+        for item in degenerate:
+            print(f"  - {item}")
+    if duplicates:
+        print("\n[Duplicate / Overlapping Walls]")
+        for item in duplicates:
+            print(f"  - {item}")
+    if near_gaps:
+        print("\n[Near-Miss Endpoint Gaps (Potential Light Leaks)]")
+        for item in near_gaps:
+            print(f"  - {item}")
+    if tight_lights:
+        print("\n[Lights Too Close to Walls]")
+        for item in tight_lights:
+            print(f"  - {item}")
+
+    if total_issues == 0:
+        print("Wall audit CLEAN (0 issues).")
+        return 0
+    if args.strict:
+        print("Wall audit FAILED (--strict).", file=sys.stderr)
+        return 1
+    return 0
+
+
+def _infer_collection_from_paths(map_path: Path, state_map_path: str | None) -> str | None:
+    pattern = re.compile(r"atlas-vtt/collections/([^/]+)/", flags=re.IGNORECASE)
+    for candidate in (state_map_path or "", map_path.as_posix()):
+        norm = candidate.replace("\\", "/")
+        m = pattern.search(norm)
+        if m and m.group(1).strip():
+            return m.group(1).strip()
+    return None
+
+
+def _load_campaign_config(config_path: str | None = None, vault_root: Path | None = None) -> dict[str, Any]:
+    if config_path:
+        cfg_file = Path(config_path).resolve()
+    elif vault_root and (vault_root.parent / "campaign.config.json").is_file():
+        cfg_file = (vault_root.parent / "campaign.config.json").resolve()
+    else:
+        cfg_file = (REPO_ROOT / "campaign.config.json").resolve()
+    raw: dict[str, Any] = {}
+    if cfg_file.is_file():
+        try:
+            raw = json.loads(cfg_file.read_text(encoding="utf-8"))
+        except Exception:
+            raw = {}
+    party = raw.get("party") if isinstance(raw.get("party"), list) and raw.get("party") else [
+        {
+            "name": "Mira",
+            "note": "Mira the Cleric",
+            "passives": {"perception": 13, "investigation": 10, "insight": 15},
+        },
+        {
+            "name": "Kael",
+            "note": "Kael the Rogue",
+            "passives": {"perception": 11, "investigation": 14, "insight": 10},
+        },
+        {
+            "name": "Bram",
+            "note": "Bram the Fighter",
+            "passives": {"perception": 10, "investigation": 9, "insight": 12},
+        },
+    ]
+    return {
+        "collection": str(raw.get("atlas_collection") or "Campaign"),
+        "party_level": int(raw.get("party_level") or 3),
+        "party": party,
+    }
+
+
+def _best_passive(party: list[dict[str, Any]], stat: str) -> tuple[str, int]:
+    best_name, best_val = "PC", 10
+    for pc in party:
+        val = int((pc.get("passives") or {}).get(stat, 10))
+        if val > best_val or best_name == "PC":
+            best_val = val
+            best_name = str(pc.get("name", "PC"))
+    return best_name, best_val
+
+
+def cmd_scaffold_dashboard(args) -> int:
+    vault_root = Path(args.vault).resolve() if args.vault else detect_default_vault(args.atlasmap)
+    map_path = Path(resolve_vault_path(args.atlasmap, vault_root))
+    with open(map_path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    cfg = _load_campaign_config(args.config, vault_root=vault_root)
+    st = data.get("state") or {}
+    grid = st.get("grid") or {}
+    lighting = st.get("lighting") or {}
+    objs = st.get("objects") or {}
+
+    scene_stem = map_path.stem
+    title = (args.name or f"{scene_stem} - Dashboard").strip()
+    collection = (
+        args.collection
+        or _infer_collection_from_paths(map_path, str(st.get("mapPath") or ""))
+        or cfg["collection"]
+    )
+    party = cfg["party"]
+    party_level = cfg["party_level"]
+
+    # Grid & lighting summary
+    cell_px = grid.get("size", 70)
+    unit_dist = grid.get("unitDistance", 5)
+    unit_type = str(grid.get("unitType") or "feet")
+    unit_suf = "m" if unit_type.lower().startswith("m") else "ft"
+    unit_str = f"{int(unit_dist)}" if abs(float(unit_dist) - round(float(unit_dist))) < 1e-6 else f"{unit_dist}"
+
+    ambient = lighting.get("ambient", 0.0)
+    if not lighting.get("enabled", False):
+        light_desc = "Dynamic Lighting disabled"
+    elif ambient >= 0.8:
+        light_desc = f"Day (`ambient: {ambient}`, token vision active)"
+    elif ambient > 0.0:
+        light_desc = f"Dusk / Dim (`ambient: {ambient}`, token vision active)"
+    else:
+        light_desc = "Dark / Night (`ambient: 0.0`, torches & local lights active)"
+
+    walls = list((objs.get("walls") or {}).values())
+    doors_cnt = sum(1 for w in walls if w.get("type") == "door")
+    secret_cnt = sum(1 for w in walls if w.get("type") == "secret-door")
+    lights_cnt = len(objs.get("lights") or {})
+
+    # Extract 1:1 H3 headings from existing pins (or provide 2 clean starter rooms)
+    pins_raw = list((objs.get("pins") or {}).values())
+    pins_raw.sort(key=lambda p: (str(p.get("label") or ""), str(p.get("name") or ""), float(p.get("y", 0)), float(p.get("x", 0))))
+
+    headings: list[str] = []
+    seen_headings: set[str] = set()
+    for idx, pin in enumerate(pins_raw, 1):
+        np_str = str(pin.get("notePath") or "")
+        if "#" in np_str:
+            h = np_str.split("#", 1)[1].strip()
+        else:
+            lbl = str(pin.get("label") or idx).strip()
+            nm = str(pin.get("name") or f"Area {idx}").strip()
+            h = f"{lbl}. {nm}" if lbl and not nm.startswith(f"{lbl}.") else nm
+        if h and h not in seen_headings:
+            headings.append(h)
+            seen_headings.add(h)
+
+    if not headings:
+        headings = ["1. Entry", "2. Main Chamber"]
+
+    # Party passives & dynamic Active Roll DC (> highest Perception / Investigation passive)
+    perc_name, perc_val = _best_passive(party, "perception")
+    inv_name, inv_val = _best_passive(party, "investigation")
+    active_dc = max(perc_val, inv_val) + 1
+    passives_chunks = []
+    for pc in party:
+        p = pc.get("passives") or {}
+        passives_chunks.append(
+            f"**{pc['name']}** Perc. `{p.get('perception', 10)}` / Inv. `{p.get('investigation', 10)}` / Ins. `{p.get('insight', 10)}`"
+        )
+    passives_line = " \\| ".join(passives_chunks)
+
+    tokens = list((objs.get("tokens") or {}).values())
+    pc_names = [str(tk.get("name") or "PC") for tk in tokens if tk.get("playerCharacter")]
+    enemy_groups: dict[tuple[str, int, str, str], int] = {}
+    for tk in tokens:
+        if tk.get("playerCharacter"):
+            continue
+        en_name = str(tk.get("name") or "Creature")
+        hp_obj = tk.get("hp") or {}
+        hp_max = int(hp_obj.get("max", hp_obj.get("current", 10))) if isinstance(hp_obj, dict) else 10
+        diff = str(tk.get("difficulty") or "-")
+        sb = str(tk.get("statblockPath") or "")
+        key = (en_name, hp_max, diff, sb)
+        enemy_groups[key] = enemy_groups.get(key, 0) + 1
+
+    safe_title = title.replace("\\", "\\\\").replace('"', '\\"')
+    safe_scene = scene_stem.replace("\\", "\\\\").replace('"', '\\"')
+
+    lines: list[str] = [
+        "---",
+        f'title: "{safe_title}"',
+        'icon: "🗺️"',
+        "tags: [atlas, dashboard, dungeon]",
+        f'collection: "{collection}"',
+        f'atlas_scene: "{safe_scene}"',
+        'status: "draft"',
+        "---",
+        "",
+        f"# 🛡️ {title}",
+        "",
+        "> [!TIP] **Atlas VTT Quick Controls**",
+        "> Press **`Tab`** to open this Linked Note, hold **`H`** (*Lighting Peek*) to preview player vision, and click doors on the canvas to open them live.",
+        "",
+        "---",
+        "",
+        "## ⚡ Quick Session Reference",
+        "",
+        "| Parameter | Operational Detail |",
+        "| :--- | :--- |",
+        f"| **Grid & Scale** | `{cell_px}px` cells (`{unit_str} {unit_suf}` per square) |",
+        f"| **Lighting** | {light_desc} |",
+        f"| **Scene Objects** | `{len(walls)}` walls (`{doors_cnt}` doors, `{secret_cnt}` secret doors), `{lights_cnt}` lights, `{len(pins_raw)}` pins |",
+        f"| **PCs on Scene** | {', '.join(pc_names) if pc_names else 'None placed yet'} |",
+        f"| **Party Passives (Lv. {party_level})** | {passives_line} |",
+        "",
+        "---",
+        "",
+        "## 🗺️ Tactical Room Guide (1:1 Pin Anchors)",
+        "",
+    ]
+
+    for idx, heading in enumerate(headings):
+        lines.append(f"### {heading}")
+        lines.append("> [!quote] 👁️ Read-Aloud Description")
+        lines.append("> *Describe two crisp sights, one sound, and one smell or temperature cue here.*")
+        lines.append("")
+        lines.append("- **Atmosphere & Light:** Note ambient lighting, cover, and terrain hazards.")
+        if idx % 2 == 0:
+            lines.append(
+                f"- ⚡ **`[Automatic Passive — {perc_name} (Perc. {perc_val})]`:** Immediate clue or threat spotted with DC ≤ `{perc_val}`."
+            )
+            lines.append(
+                f"- 🎲 **`[Active Roll — Investigation DC {active_dc}]`:** Hidden detail, trap mechanism, or secondary clue."
+            )
+        else:
+            lines.append(
+                f"- ⚡ **`[Automatic Passive — {inv_name} (Inv. {inv_val})]`:** Structural tell or track spotted with DC ≤ `{inv_val}`."
+            )
+            lines.append(
+                f"- 🎲 **`[Active Roll — Perception DC {active_dc}]`:** Concealed foe, secret catch, or subtle sound."
+            )
+        lines.append("- **Tactics & Exits:** Note enemy opening moves, cover, and connected doors.")
+        lines.append("")
+
+    if enemy_groups:
+        lines.extend([
+            "---",
+            "",
+            "## 👹 Placed Tokens / Enemies",
+            "",
+            "| Creature | Qty | HP | Difficulty | Statblock |",
+            "| :--- | :---: | :---: | :---: | :--- |",
+        ])
+        for (en_name, hp_max, diff, sb), qty in enemy_groups.items():
+            if sb.endswith(".md"):
+                sb_link = f"[[{sb[:-3]}\\|{en_name}]]"
+            else:
+                sb_link = "Ad hoc"
+            lines.append(f"| {en_name} | {qty} | {hp_max} | {diff} | {sb_link} |")
+        lines.append("")
+
+    content = "\n".join(lines).rstrip() + "\n"
+    out_path = Path(args.out).resolve()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(content, encoding="utf-8", newline="\n")
+
+    bsize = len(content.encode("utf-8"))
+    print(f"Scaffolded Dashboard: {out_path}")
+    print(f"  Size: {bsize} bytes ({bsize / 1024:.2f} KB) | Collection: {collection} | H3 Sections: {len(headings)} | Active DC: {active_dc} | Enemies grouped: {len(enemy_groups)}")
     return 0
 
 
@@ -422,6 +944,21 @@ def main() -> int:
     p4.add_argument("--dashboard", help="Optional Dashboard .md path (auto-detected from dmNotePath if omitted)")
     p4.add_argument("--reset-test", action="store_true")
     p4.set_defaults(func=cmd_validate)
+
+    p5 = sub.add_parser("audit-walls", help="Audit walls for degenerate segments, duplicates, near-miss gaps, and light clearance")
+    p5.add_argument("atlasmap", help="Path to .atlasmap scene file")
+    p5.add_argument("--gap-threshold", type=float, default=18.0, help="Near-miss endpoint gap threshold in px (default: 18)")
+    p5.add_argument("--light-clearance", type=float, default=20.0, help="Minimum light-to-wall clearance in px (default: 20)")
+    p5.add_argument("--strict", action="store_true", help="Exit with code 1 if any wall or light issues are detected")
+    p5.set_defaults(func=cmd_audit_walls)
+
+    p6 = sub.add_parser("scaffold-dashboard", help="Generate a < 5 KB starter DM Dashboard from an .atlasmap scene")
+    p6.add_argument("atlasmap", help="Path to .atlasmap scene file")
+    p6.add_argument("--out", required=True, help="Output Markdown path for the starter Dashboard")
+    p6.add_argument("--name", help="Optional Dashboard title (defaults to '<Scene Name> - Dashboard')")
+    p6.add_argument("--collection", help="Optional Atlas collection override (inferred from scene path if omitted)")
+    p6.add_argument("--config", help="Optional path to campaign.config.json")
+    p6.set_defaults(func=cmd_scaffold_dashboard)
 
     args = ap.parse_args()
     return args.func(args)

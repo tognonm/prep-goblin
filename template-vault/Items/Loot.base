@@ -1,0 +1,30 @@
+filters:
+  and:
+    - 'file.inFolder("Items")'
+    - 'file.ext == "md"'
+properties:
+  file.name:
+    displayName: "Item"
+  rarity:
+    displayName: "Rarity"
+  attunement:
+    displayName: "Attunement"
+  value_gp:
+    displayName: "Value (gp)"
+  owner:
+    displayName: "Owner"
+  status:
+    displayName: "Status"
+views:
+  - type: table
+    name: "Loot & Magic Items"
+    order:
+      - file.name
+      - rarity
+      - attunement
+      - value_gp
+      - owner
+      - status
+    sort:
+      - property: file.name
+        direction: ASC

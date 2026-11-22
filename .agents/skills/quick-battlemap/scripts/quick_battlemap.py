@@ -106,6 +106,30 @@ PRESET_DEFAULTS: dict[str, dict[str, Any]] = {
         "icon": "🏠",
         "subtitle": "Versatile shop, tavern, or townhouse featuring a main hall, counter, pillars, backroom, and hidden rear alley secret door.",
     },
+    "camp": {
+        "cols": 16,
+        "rows": 12,
+        "lighting": "night",
+        "default_name": "Quick Battlemap - Forest Camp",
+        "icon": "⛺",
+        "subtitle": "Woodland clearing at night with three angled canvas tents, central roaring campfire, fallen log cover, and four ancient sight-blocking tree clusters.",
+    },
+    "bridge": {
+        "cols": 18,
+        "rows": 12,
+        "lighting": "day",
+        "default_name": "Quick Battlemap - Stone Bridge",
+        "icon": "🌉",
+        "subtitle": "Fast-flowing river gorge spanned by an arched stone bridge with solid parapet end-posts, cliffside boulder sight-blockers, muddy approaches, and twin lanterns.",
+    },
+    "crypt": {
+        "cols": 16,
+        "rows": 12,
+        "lighting": "night",
+        "default_name": "Quick Battlemap - Forgotten Crypt",
+        "icon": "⚰️",
+        "subtitle": "Subterranean flagstone crypt with four shadow-casting columns, stone sarcophagi, raised dais, unlocked west entrance, braziers, and a hidden east reliquary.",
+    },
 }
 
 LIGHTING_AMBIENT = {
@@ -156,7 +180,7 @@ GENERIC_ARCANE_KEYWORDS = (
 # ---------------------------------------------------------------------------
 
 def load_runtime_config(config_path: pathlib.Path | None = None) -> dict[str, Any]:
-    cfg_file = config_path or (REPO_ROOT / "campaign.config.json")
+    cfg_file = (config_path or (REPO_ROOT / "campaign.config.json")).resolve()
     raw: dict[str, Any] = {}
     if cfg_file.is_file():
         try:
@@ -166,7 +190,10 @@ def load_runtime_config(config_path: pathlib.Path | None = None) -> dict[str, An
 
     vault_dir_val = raw.get("vault_dir")
     if isinstance(vault_dir_val, str) and vault_dir_val.strip():
-        vault_path = (REPO_ROOT / vault_dir_val).resolve()
+        v_raw = pathlib.Path(vault_dir_val)
+        vault_path = v_raw.resolve() if v_raw.is_absolute() else (cfg_file.parent / v_raw).resolve()
+    elif (cfg_file.parent / "Vault").is_dir():
+        vault_path = (cfg_file.parent / "Vault").resolve()
     elif (REPO_ROOT / "Vault").is_dir():
         vault_path = (REPO_ROOT / "Vault").resolve()
     else:
@@ -705,11 +732,153 @@ def draw_lamp_prop(img: Image.Image, cx: float, cy: float, active_glow: bool = T
         else:
             draw.line([(cx - 8, cy - 5), (cx + 8, cy + 6)], fill=(64, 48, 36, 255), width=3)
             draw.line([(cx - 7, cy + 6), (cx + 7, cy - 5)], fill=(54, 40, 30, 255), width=3)
+    elif style == "brazier":
+        draw.ellipse([cx - 16 + 3, cy - 16 + 4, cx + 16 + 3, cy + 16 + 4], fill=(10, 10, 14, 120))
+        draw.ellipse([cx - 16, cy - 16, cx + 16, cy + 16], fill=(54, 48, 44, 255), outline=(112, 96, 74, 255), width=2)
+        draw.ellipse([cx - 12, cy - 12, cx + 12, cy + 12], fill=(38, 28, 24, 255), outline=(84, 72, 58, 220), width=1)
+        if active_glow:
+            draw.ellipse([cx - 10, cy - 10, cx + 10, cy + 10], fill=(226, 94, 28, 235))
+            draw.ellipse([cx - 5, cy - 5, cx + 5, cy + 5], fill=(255, 212, 98, 250))
+        else:
+            draw.ellipse([cx - 8, cy - 8, cx + 8, cy + 8], fill=(64, 58, 54, 235))
     else:
         draw.ellipse([cx - 12, cy - 12, cx + 12, cy + 12], fill=(42, 46, 52, 245), outline=(92, 98, 108, 255), width=2)
         core = (255, 196, 92, 250) if active_glow else (196, 168, 118, 220)
         draw.ellipse([cx - 6, cy - 6, cx + 6, cy + 6], fill=core, outline=(255, 240, 190, 255), width=1)
     return img
+
+
+def _rot_pt(cx: float, cy: float, dx: float, dy: float, angle_rad: float) -> tuple[float, float]:
+    ca, sa = math.cos(angle_rad), math.sin(angle_rad)
+    return cx + dx * ca - dy * sa, cy + dx * sa + dy * ca
+
+
+def draw_tent(
+    draw: ImageDraw.ImageDraw,
+    cx: float,
+    cy: float,
+    length: float,
+    width: float,
+    angle_deg: float,
+    base_rgb: tuple[int, int, int],
+) -> None:
+    ang = math.radians(angle_deg)
+    hl, hw = length * 0.5, width * 0.5
+    corners = [
+        _rot_pt(cx, cy, -hl, -hw, ang),
+        _rot_pt(cx, cy, hl, -hw, ang),
+        _rot_pt(cx, cy, hl, hw, ang),
+        _rot_pt(cx, cy, -hl, hw, ang),
+    ]
+    shadow = [(px + 6, py + 7) for px, py in corners]
+    draw.polygon(shadow, fill=(10, 14, 10, 115))
+
+    # Guy ropes and wooden stakes
+    for sx, sy, ex, ey in (
+        (-hl, -hw, -hl - 10, -hw - 8),
+        (hl, -hw, hl + 10, -hw - 8),
+        (hl, hw, hl + 10, hw + 8),
+        (-hl, hw, -hl - 10, hw + 8),
+    ):
+        p0 = _rot_pt(cx, cy, sx, sy, ang)
+        p1 = _rot_pt(cx, cy, ex, ey, ang)
+        draw.line([p0, p1], fill=(168, 152, 122, 185), width=1)
+        draw.ellipse([p1[0] - 2, p1[1] - 2, p1[0] + 2, p1[1] + 2], fill=(74, 52, 34, 240))
+
+    r0, g0, b0 = base_rgb
+    lit = (min(255, r0 + 22), min(255, g0 + 20), min(255, b0 + 16), 255)
+    shaded = (max(0, r0 - 24), max(0, g0 - 22), max(0, b0 - 20), 255)
+    outline = (max(0, r0 - 65), max(0, g0 - 60), max(0, b0 - 52), 255)
+
+    ridge_a = _rot_pt(cx, cy, -hl, 0, ang)
+    ridge_b = _rot_pt(cx, cy, hl, 0, ang)
+    draw.polygon([corners[0], corners[1], ridge_b, ridge_a], fill=lit, outline=outline)
+    draw.polygon([ridge_a, ridge_b, corners[2], corners[3]], fill=shaded, outline=outline)
+    draw.line([ridge_a, ridge_b], fill=(min(255, r0 + 44), min(255, g0 + 40), min(255, b0 + 34), 255), width=3)
+
+    # Entrance flap facing +length side
+    flap_tip = _rot_pt(cx, cy, hl + 6, 0, ang)
+    flap_l = _rot_pt(cx, cy, hl - 4, -hw * 0.45, ang)
+    flap_r = _rot_pt(cx, cy, hl - 4, hw * 0.45, ang)
+    draw.polygon([flap_l, flap_tip, flap_r], fill=(28, 24, 20, 210), outline=outline)
+
+
+def draw_fallen_log(
+    draw: ImageDraw.ImageDraw,
+    cx: float,
+    cy: float,
+    length: float,
+    radius: float,
+    angle_deg: float,
+) -> None:
+    ang = math.radians(angle_deg)
+    hl = length * 0.5
+    poly = [
+        _rot_pt(cx, cy, -hl, -radius, ang),
+        _rot_pt(cx, cy, hl, -radius, ang),
+        _rot_pt(cx, cy, hl, radius, ang),
+        _rot_pt(cx, cy, -hl, radius, ang),
+    ]
+    draw.polygon([(px + 4, py + 5) for px, py in poly], fill=(12, 16, 10, 110))
+    draw.polygon(poly, fill=(96, 68, 44, 255), outline=(44, 30, 18, 255))
+    hi_a = _rot_pt(cx, cy, -hl + 4, -radius * 0.35, ang)
+    hi_b = _rot_pt(cx, cy, hl - 4, -radius * 0.35, ang)
+    draw.line([hi_a, hi_b], fill=(134, 98, 64, 210), width=3)
+    for frac in (-0.32, 0.0, 0.32):
+        ba = _rot_pt(cx, cy, hl * frac, -radius + 2, ang)
+        bb = _rot_pt(cx, cy, hl * frac + 3, radius - 2, ang)
+        draw.line([ba, bb], fill=(56, 38, 24, 175), width=1)
+    # Moss patch
+    mx, my = _rot_pt(cx, cy, -hl * 0.18, -radius * 0.2, ang)
+    draw.ellipse([mx - 7, my - 5, mx + 7, my + 5], fill=(74, 102, 52, 210))
+
+
+def draw_ancient_tree_cluster(
+    draw: ImageDraw.ImageDraw,
+    cx: float,
+    cy: float,
+    cell: int,
+    rng: random.Random,
+) -> None:
+    # Massive trunk + mossy root boulder anchored inside a 1x1 solid wall square
+    draw.ellipse([cx - cell * 0.48 + 5, cy - cell * 0.48 + 7, cx + cell * 0.48 + 5, cy + cell * 0.48 + 7], fill=(8, 12, 8, 130))
+    draw_boulder_polygon(draw, cx + cell * 0.18, cy + cell * 0.16, cell * 0.28, cell * 0.24, rng, base_rgb=(98, 100, 92), sides=8)
+    for ang_i in range(5):
+        ang = (2 * math.pi * ang_i) / 5 + rng.uniform(-0.2, 0.2)
+        rx = cx + math.cos(ang) * cell * 0.44
+        ry = cy + math.sin(ang) * cell * 0.44
+        draw.line([(cx, cy), (rx, ry)], fill=(66, 46, 28, 255), width=6)
+    tr = cell * 0.30
+    draw.ellipse([cx - tr, cy - tr, cx + tr, cy + tr], fill=(78, 54, 34, 255), outline=(38, 26, 16, 255), width=2)
+    draw_bush(
+        draw,
+        cx - cell * 0.08,
+        cy - cell * 0.08,
+        cell * 0.42,
+        rng,
+        palette=((28, 48, 26), (44, 72, 36), (68, 102, 50)),
+    )
+
+
+def draw_sarcophagus(
+    draw: ImageDraw.ImageDraw,
+    cx: float,
+    cy: float,
+    w: float,
+    h: float,
+    vertical: bool = False,
+) -> None:
+    if vertical:
+        w, h = h, w
+    x0, y0, x1, y1 = cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2
+    draw.rectangle([x0 + 5, y0 + 6, x1 + 5, y1 + 6], fill=(12, 12, 16, 125))
+    draw.rectangle([x0, y0, x1, y1], fill=(108, 106, 102, 255), outline=(44, 44, 48, 255), width=2)
+    draw.rectangle([x0 + 6, y0 + 6, x1 - 6, y1 - 6], fill=(134, 132, 126, 255), outline=(72, 70, 68, 220), width=1)
+    # Carved sword/cross motif on lid
+    draw.line([(cx, y0 + 10), (cx, y1 - 10)], fill=(78, 76, 74, 210), width=2)
+    draw.line([(x0 + 10, cy), (x1 - 10, cy)], fill=(78, 76, 74, 210), width=2)
+    draw.line([(x0 + 6, y0 + 6), (x0 + 14, y0 + 14)], fill=(60, 58, 56, 190), width=1)
+    draw.line([(x1 - 6, y1 - 6), (x1 - 14, y1 - 14)], fill=(60, 58, 56, 190), width=1)
 
 
 def paint_grid_walls(draw: ImageDraw.ImageDraw, walls: dict[str, dict[str, Any]], thickness: int = 10) -> None:
@@ -729,7 +898,7 @@ def paint_grid_walls(draw: ImageDraw.ImageDraw, walls: dict[str, dict[str, Any]]
 
 
 # ---------------------------------------------------------------------------
-# 5 Procedural Preset Builders
+# 8 Procedural Preset Builders
 # ---------------------------------------------------------------------------
 
 def build_preset_whiteboard(
@@ -1292,11 +1461,26 @@ def build_preset_hills(
     img = composite_soft_layer(img, _trail, blur_radius=10)
     draw = ImageDraw.Draw(img, "RGBA")
 
-    outcrops = [
-        (max(4, cols // 4 + 1), 2, max(6, cols // 4 + 3), 4),
-        (max(6, cols // 2 - 1), max(rows - 4, 6), min(cols - 5, cols // 2 + 2), max(rows - 2, 8)),
-        (min(cols - 4, int(cols * 0.78)), 3, min(cols - 2, int(cols * 0.78) + 2), 5),
-    ]
+    # Safely place three crag outcrops strictly inside [1..cols-1] x [1..rows-1] with zero wall overlap
+    o0_w = 2 if cols >= 14 else 1
+    o0_h = 2 if rows >= 10 else 1
+    o0_c0 = max(3, cols // 4)
+    o0_r0 = 2 if rows >= 10 else 1
+    o0 = (o0_c0, o0_r0, o0_c0 + o0_w, o0_r0 + o0_h)
+
+    o1_w = 3 if cols >= 16 else (2 if cols >= 12 else 1)
+    o1_h = 2 if rows >= 10 else 1
+    o1_c0 = max(4, min(cols - o1_w - 2, cols // 2 - 1))
+    o1_r0 = min(rows - o1_h - 1, max(rows - o1_h - 2, rows // 2 + 1))
+    o1 = (o1_c0, o1_r0, o1_c0 + o1_w, o1_r0 + o1_h)
+
+    o2_w = 2 if cols >= 14 else 1
+    o2_h = 2 if rows >= 10 else 1
+    o2_c0 = min(cols - o2_w - 1, max(o0[2] + 3, int(cols * 0.78)))
+    o2_r0 = 3 if rows >= 10 else 2
+    o2 = (o2_c0, o2_r0, o2_c0 + o2_w, o2_r0 + o2_h)
+
+    outcrops = [o0, o1, o2]
 
     blocked: set[tuple[int, int]] = set()
     for c0, r0, c1, r1 in outcrops:
@@ -1340,8 +1524,8 @@ def build_preset_hills(
         draw.line([(cx - 18, cy + 4), (cx + 2, cy - 6), (cx + 22, cy + 8)], fill=(72, 70, 62, 190), width=2)
         draw_bush(draw, x0 + 22, y1 - 20, 12, rng, palette=((64, 72, 46), (86, 92, 58), (114, 104, 76)))
 
-    men_c = min(cols - 6, max(outcrops[0][2] + 2, cols // 2 + 1))
-    men_r = 4
+    men_c = min(outcrops[2][0] - 2, max(outcrops[0][2] + 1, cols // 2))
+    men_r = max(2, min(outcrops[1][1] - 2, 4))
     mx, my = cell_center(men_c, men_r, cell)
     draw.ellipse([mx - 30, my - 30, mx + 30, my + 30], fill=(124, 118, 102, 165), outline=(88, 84, 72, 220), width=2)
     draw.polygon([(mx - 6, my + 4), (mx + 14, my - 6), (mx + 38, my + 24), (mx + 16, my + 34)], fill=(20, 20, 18, 105))
@@ -1369,8 +1553,8 @@ def build_preset_hills(
     for idx, (c0, r0, c1, r1) in enumerate(outcrops, 1):
         wb.add_rect_grid(c0, r0, c1, r1, f"chain_crag_{idx}")
 
-    fire_c = min(cols - 5, men_c + 1)
-    fire_r = men_r + 1
+    fire_c = min(outcrops[2][0] - 1, men_c + 1)
+    fire_r = min(outcrops[1][1] - 1, men_r + 1)
     fx, fy = cell_center(fire_c, fire_r, cell)
     fire_lit = lighting in ("dusk", "night")
     img = draw_lamp_prop(img, fx, fy, active_glow=fire_lit, style="campfire")
@@ -1391,18 +1575,18 @@ def build_preset_hills(
     enemy_cells = [
         (fire_c + 1, fire_r - 1),
         (fire_c + 1, fire_r + 1),
-        (fire_c, fire_r + 2),
+        (fire_c, min(rows - 2, fire_r + 2)),
         (men_c - 1, men_r - 1),
-        (cols - 3, 5),
-        (cols - 2, 6),
-        (outcrops[0][2] + 1, 5),
+        (cols - 3, min(rows - 2, 5)),
+        (cols - 2, min(rows - 2, 6)),
+        (outcrops[0][2] + 1, min(rows - 2, 5)),
         (outcrops[2][0] - 1, 2),
     ]
 
     pins = [
         {"label": "A", "name": "Moorland Trail", "heading": "A. Moorland Trail (West Entry)", "col": 2, "row": max(1, mid_r - 2)},
-        {"label": "B", "name": "Ancient Menhir", "heading": "B. Ancient Menhir and Campfire", "col": men_c - 1, "row": men_r},
-        {"label": "C", "name": "Limestone Crags", "heading": "C. Limestone Outcrops and Cover", "col": outcrops[1][0] + 1, "row": outcrops[1][1] - 1},
+        {"label": "B", "name": "Ancient Menhir", "heading": "B. Ancient Menhir and Campfire", "col": max(1, men_c - 1), "row": men_r},
+        {"label": "C", "name": "Limestone Crags", "heading": "C. Limestone Outcrops and Cover", "col": min(cols - 2, outcrops[1][0]), "row": max(1, outcrops[1][1] - 1)},
     ]
 
     sections = [
@@ -1492,14 +1676,15 @@ def build_preset_interior(
     img = composite_soft_layer(img, _ao, blur_radius=6)
     draw = ImageDraw.Draw(img, "RGBA")
 
-    cnt_c0 = max(b_x0 + 4, part_x - 3)
+    cnt_c0 = max(b_x0 + 2, part_x - 3)
     cnt_c1 = part_x - 1
     cx0, cy0, cx1, cy1 = cnt_c0 * cell + 6, (b_y0 + 1) * cell + 14, cnt_c1 * cell - 6, (b_y0 + 1) * cell + 46
-    draw.rectangle([cx0 + 4, cy0 + 5, cx1 + 4, cy1 + 5], fill=(22, 16, 12, 95))
-    draw.rectangle([cx0, cy0, cx1, cy1], fill=(116, 76, 42, 255), outline=(56, 34, 18, 255), width=2)
-    draw.rectangle([cx0 + 4, cy0 + 4, cx1 - 4, cy1 - 4], outline=(148, 104, 62, 200), width=1)
-    for sx in range(cx0 + 20, cx1 - 12, 34):
-        draw.ellipse([sx - 8, cy1 + 8, sx + 8, cy1 + 24], fill=(128, 86, 48, 255), outline=(56, 36, 18, 255), width=2)
+    if cx1 - cx0 >= 20 and cy1 - cy0 >= 12:
+        draw.rectangle([cx0 + 4, cy0 + 5, cx1 + 4, cy1 + 5], fill=(22, 16, 12, 95))
+        draw.rectangle([cx0, cy0, cx1, cy1], fill=(116, 76, 42, 255), outline=(56, 34, 18, 255), width=2)
+        draw.rectangle([cx0 + 4, cy0 + 4, cx1 - 4, cy1 - 4], outline=(148, 104, 62, 200), width=1)
+        for sx in range(cx0 + 20, cx1 - 12, 34):
+            draw.ellipse([sx - 8, cy1 + 8, sx + 8, cy1 + 24], fill=(128, 86, 48, 255), outline=(56, 36, 18, 255), width=2)
 
     def draw_table(tx0: float, ty0: float, tw: float, th: float) -> None:
         draw.rectangle([tx0 + 4, ty0 + 5, tx0 + tw + 4, ty0 + th + 5], fill=(20, 14, 10, 95))
@@ -1628,12 +1813,667 @@ def build_preset_interior(
     }
 
 
+def build_preset_camp(
+    cols: int, rows: int, cell: int, lighting: str, seed: int, prefix: str,
+    party: list[dict[str, Any]], unit_dist: float, unit_type: str,
+) -> dict[str, Any]:
+    rng = random.Random(seed)
+    w, h = cols * cell, rows * cell
+    perc_name, perc_val = best_passive_pc(party, "perception")
+
+    fire_c = cols // 2
+    fire_r = rows // 2
+    fx, fy = cell_center(fire_c, fire_r, cell)
+
+    # Woodland clearing ground with dappled foliage and central packed dirt
+    img = Image.new("RGBA", (w, h), (52, 68, 42, 255))
+
+    def _woodland_floor(d: ImageDraw.ImageDraw) -> None:
+        for _ in range(cols * rows * 2):
+            gx, gy = rng.randint(0, w), rng.randint(0, h)
+            rx, ry = rng.randint(30, 82), rng.randint(24, 66)
+            dv = rng.randint(-12, 12)
+            if rng.random() < 0.65:
+                col_p = (46 + dv, 66 + dv, 36 + dv, 130)
+            else:
+                col_p = (72 + dv, 62 + dv, 44 + dv, 105)
+            d.ellipse([gx - rx, gy - ry, gx + rx, gy + ry], fill=col_p)
+        # Central trampled dirt clearing around campfire
+        crx = min(w * 0.34, cell * 4.4)
+        cry = min(h * 0.34, cell * 3.4)
+        d.ellipse([fx - crx, fy - cry, fx + crx, fy + cry], fill=(104, 88, 62, 175))
+        d.ellipse([fx - crx * 0.65, fy - cry * 0.65, fx + crx * 0.65, fy + cry * 0.65], fill=(118, 98, 70, 185))
+
+    img = composite_soft_layer(img, _woodland_floor, blur_radius=18)
+    draw = ImageDraw.Draw(img, "RGBA")
+
+    # Grass blades and autumn/pine needle litter
+    for _ in range(cols * rows * 3):
+        tx, ty = rng.randint(10, w - 10), rng.randint(10, h - 10)
+        if math.hypot(tx - fx, ty - fy) < cell * 2.0:
+            draw.ellipse([tx - 2, ty - 1, tx + 2, ty + 2], fill=(82, 68, 48, 120))
+        else:
+            draw.line([(tx, ty), (tx - 2, ty - 5)], fill=(38, 56, 30, 125), width=1)
+            draw.line([(tx, ty), (tx + 2, ty - 6)], fill=(78, 98, 54, 115), width=1)
+
+    # 4 sight-blocking ancient tree trunks / boulder clusters (1x1 solid walls)
+    tc_w = max(2, cols // 4 - 1)
+    tc_e = min(cols - 3, cols - cols // 4)
+    tr_n = max(1, rows // 5)
+    tr_s = min(rows - 2, rows - 1 - rows // 5)
+    tree_blockers = [(tc_w, tr_n), (tc_e, tr_n), (tc_w, tr_s), (tc_e, tr_s)]
+
+    blocked: set[tuple[int, int]] = set(tree_blockers)
+    blocked.add((fire_c, fire_r))
+
+    # 3 angled canvas tents pitched around the central campfire
+    dx_tent = max(1.8, min(2.6, cols * 0.16))
+    dy_tent = max(1.5, min(2.0, rows * 0.17))
+    tent_specs = [
+        (fx - dx_tent * cell, fy - dy_tent * cell, cell * 1.45, cell * 0.92, 32.0, (176, 146, 98)),
+        (fx + dx_tent * cell, fy - dy_tent * cell * 0.92, cell * 1.40, cell * 0.90, 152.0, (132, 144, 112)),
+        (fx - dx_tent * cell * 0.88, fy + dy_tent * cell, cell * 1.42, cell * 0.90, -24.0, (158, 114, 82)),
+    ]
+    for tcx, tcy, tlen, twid, tang, trgb in tent_specs:
+        draw_tent(draw, tcx, tcy, tlen, twid, tang, trgb)
+
+    # Fallen logs (half cover) & camp supplies
+    draw_fallen_log(draw, fx + dx_tent * cell * 0.85, fy + dy_tent * cell * 0.78, cell * 1.65, 11, -34.0)
+    draw_fallen_log(draw, fx - dx_tent * cell * 1.32, fy + cell * 0.15, cell * 1.45, 10, 82.0)
+    draw_fallen_log(draw, fx + cell * 0.15, max(cell * 1.3, fy - dy_tent * cell * 1.35), cell * 1.55, 10, 8.0)
+
+    # Firewood pile and bedroll near south-west camp edge
+    draw_crate(draw, fx - cell * 1.35, fy + cell * 1.05, 24, 22, rng)
+    draw_barrel(draw, fx + cell * 1.55, fy - cell * 0.55, 12)
+
+    # Decorative forest edge underbrush around outer perimeter
+    edge_bushes = [
+        (0, 0), (1, 0), (cols - 2, 0), (cols - 1, 1),
+        (0, rows - 1), (1, rows - 1), (cols - 2, rows - 1), (cols - 1, rows - 2),
+        (0, rows // 2), (cols - 1, rows // 2), (cols // 2, 0), (cols // 2, rows - 1),
+    ]
+    for bc, br in edge_bushes:
+        if (bc, br) in blocked:
+            continue
+        bx = (bc + rng.uniform(0.25, 0.75)) * cell
+        by = (br + rng.uniform(0.25, 0.75)) * cell
+        draw_bush(draw, bx, by, rng.uniform(18, 28), rng, palette=((30, 50, 26), (48, 76, 38), (74, 108, 52)))
+
+    # Render the 4 massive ancient tree trunks & boulder clusters
+    for tc, tr in tree_blockers:
+        tx, ty = cell_center(tc, tr, cell)
+        draw_ancient_tree_cluster(draw, tx, ty, cell, rng)
+
+    img = add_grain(img, rng, strength=6)
+
+    wb = WallBuilder(prefix, cell)
+    wb.add_rect_grid(0, 0, cols, rows, "chain_outer")
+    for idx, (tc, tr) in enumerate(tree_blockers, 1):
+        wb.add_rect_grid(tc, tr, tc + 1, tr + 1, f"chain_tree_{idx}")
+
+    fire_lit = lighting in ("dusk", "night")
+    img = draw_lamp_prop(img, fx, fy, active_glow=fire_lit, style="campfire")
+    lights: dict[str, Any] = {
+        f"light_{prefix}_001": {
+            "id": f"light_{prefix}_001",
+            "kind": "light",
+            "x": fx,
+            "y": fy,
+            "emission": make_lamp_emission(4.0, 8.0, unit_dist, color="#ff9436", intensity=0.95, kind="torch"),
+            "activeBelowAmbient": 0.5,
+        }
+    }
+
+    pc_cells = [
+        (fire_c - 1, fire_r),
+        (fire_c - 1, fire_r - 1),
+        (fire_c, min(rows - 2, fire_r + 1)),
+    ]
+    enemy_cells = [
+        (cols - 2, fire_r),
+        (cols - 2, max(1, fire_r - 2)),
+        (cols - 2, min(rows - 2, fire_r + 2)),
+        (min(cols - 2, fire_c + 2), 1),
+        (min(cols - 2, fire_c + 2), rows - 2),
+        (1, 1),
+        (1, rows - 2),
+        (cols - 3, min(rows - 2, fire_r + 1)),
+    ]
+
+    pin_b_col, pin_b_row = max(1, fire_c - 2), min(rows - 2, fire_r + 1)
+    if (pin_b_col, pin_b_row) in blocked:
+        pin_b_col = max(1, fire_c - 1)
+
+    pins = [
+        {"label": "A", "name": "Campfire Clearing", "heading": "A. Campfire Clearing (Central Watch)", "col": fire_c, "row": max(1, fire_r - 1)},
+        {"label": "B", "name": "Tents and Logs", "heading": "B. Canvas Tents and Fallen Logs", "col": pin_b_col, "row": pin_b_row},
+        {"label": "C", "name": "Ancient Tree Line", "heading": "C. Ancient Tree Line (Ambush Perimeter)", "col": min(cols - 2, tc_e), "row": max(1, tr_n + 2)},
+    ]
+
+    sections = [
+        (
+            "A. Campfire Clearing (Central Watch)",
+            [
+                f"Central stone-ring campfire illuminates the clearing (`bright {fmt_dist(4, unit_dist, unit_type)} / dim {fmt_dist(8, unit_dist, unit_type)}` at dusk and night) while leaving the outer treeline shrouded in darkness.",
+                "Characters sitting beside the fire are clearly backlit to prowlers watching from the woods.",
+            ],
+        ),
+        (
+            "B. Canvas Tents and Fallen Logs",
+            [
+                "Three pitched canvas tents obscure sightlines casually, while mossy fallen logs around the clearing provide sturdy **half cover (`+2 AC`)**.",
+                "Dousing or kicking embers over the campfire takes an action and shifts the clearing into pitch darkness.",
+            ],
+        ),
+        (
+            "C. Ancient Tree Line (Ambush Perimeter)",
+            [
+                "Four massive ancient trunks and root-wrapped boulders block dynamic lighting and line of sight completely, creating natural ambush blind spots.",
+                f"⚡ `[Automatic Passive — {perc_name} (Perc. {perc_val})]` Hears twigs snapping just beyond the warm circle of firelight.",
+                "🎲 `[Active Roll — Perception or Survival DC 14]` To spot crouched stalkers circling behind the ancient trunks.",
+            ],
+        ),
+    ]
+
+    return {
+        "image": img.convert("RGB"),
+        "walls": wb.walls,
+        "lights": lights,
+        "pins": pins,
+        "pc_cells": pc_cells,
+        "enemy_cells": enemy_cells,
+        "blocked_cells": blocked,
+        "sections": sections,
+        "grid_opacity": 0.35,
+    }
+
+
+def build_preset_bridge(
+    cols: int, rows: int, cell: int, lighting: str, seed: int, prefix: str,
+    party: list[dict[str, Any]], unit_dist: float, unit_type: str,
+) -> dict[str, Any]:
+    rng = random.Random(seed)
+    w, h = cols * cell, rows * cell
+    perc_name, perc_val = best_passive_pc(party, "perception")
+
+    riv_w = 4 if cols >= 14 else 3
+    riv_c0 = (cols - riv_w) // 2
+    riv_c1 = riv_c0 + riv_w
+
+    br_c0 = max(2, riv_c0 - 1)
+    br_c1 = min(cols - 2, riv_c1 + 1)
+    br_h = 4 if rows >= 11 else 3
+    br_r0 = (rows - br_h) // 2
+    br_r1 = br_r0 + br_h
+
+    # Earthy gorge banks
+    img = Image.new("RGBA", (w, h), (96, 98, 72, 255))
+
+    def _bank_mottle(d: ImageDraw.ImageDraw) -> None:
+        for _ in range(cols * rows * 2):
+            gx, gy = rng.randint(0, w), rng.randint(0, h)
+            rx, ry = rng.randint(32, 78), rng.randint(24, 62)
+            dv = rng.randint(-12, 12)
+            col_p = (88 + dv, 96 + dv, 64 + dv, 125) if rng.random() < 0.6 else (112 + dv, 104 + dv, 86 + dv, 115)
+            d.ellipse([gx - rx, gy - ry, gx + rx, gy + ry], fill=col_p)
+
+    img = composite_soft_layer(img, _bank_mottle, blur_radius=16)
+    draw = ImageDraw.Draw(img, "RGBA")
+
+    # Fast-flowing blue-slate river running North-South through a rocky gorge
+    rx0, rx1 = riv_c0 * cell, riv_c1 * cell
+    left_cliff, right_cliff = [], []
+    left_water, right_water = [], []
+    for y in range(0, h + 30, 30):
+        w_l = math.sin(y * 0.016 + seed) * 14 + rng.uniform(-4, 4)
+        w_r = math.cos(y * 0.015 + seed * 0.7) * 14 + rng.uniform(-4, 4)
+        left_cliff.append((rx0 - 24 + w_l, y))
+        right_cliff.append((rx1 + 24 + w_r, y))
+        left_water.append((rx0 + 4 + w_l * 0.7, y))
+        right_water.append((rx1 - 4 + w_r * 0.7, y))
+
+    # Gorge rim rock shelf
+    draw.polygon(left_cliff + list(reversed(right_cliff)), fill=(86, 84, 78, 255), outline=(44, 44, 42, 240))
+    # Deep blue-slate river water
+    draw.polygon(left_water + list(reversed(right_water)), fill=(44, 72, 92, 255))
+
+    # Deeper central river channel & rapid foam streaks
+    def _river_currents(d: ImageDraw.ImageDraw) -> None:
+        inner_l = [(x + 26, y) for x, y in left_water]
+        inner_r = [(x - 26, y) for x, y in right_water]
+        d.polygon(inner_l + list(reversed(inner_r)), fill=(30, 54, 76, 180))
+        for _ in range(28):
+            cx_r = rng.uniform(rx0 + 22, rx1 - 22)
+            cy_r = rng.uniform(14, h - 40)
+            slen = rng.uniform(22, 54)
+            d.line([(cx_r, cy_r), (cx_r + rng.uniform(-6, 6), cy_r + slen)], fill=(154, 192, 210, 125), width=2)
+
+    img = composite_soft_layer(img, _river_currents, blur_radius=2)
+    draw = ImageDraw.Draw(img, "RGBA")
+
+    # Submerged river rocks with whitewater wakes
+    for _ in range(7):
+        rrx = rng.uniform(rx0 + 28, rx1 - 28)
+        rry = rng.choice([rng.uniform(24, br_r0 * cell - 24), rng.uniform(br_r1 * cell + 24, h - 24)])
+        draw.ellipse([rrx - 14, rry - 10, rrx + 14, rry + 18], fill=(198, 222, 232, 130))
+        draw_boulder_polygon(draw, rrx, rry, 12, 10, rng, base_rgb=(82, 92, 96), sides=7)
+
+    # Muddy West-East approach tracks leading onto the bridge
+    road_mid = (br_r0 + br_h * 0.5) * cell
+    road_half = (br_h * 0.42) * cell
+    draw.rectangle([0, road_mid - road_half, br_c0 * cell + 16, road_mid + road_half], fill=(124, 102, 74, 235))
+    draw.rectangle([br_c1 * cell - 16, road_mid - road_half, w, road_mid + road_half], fill=(124, 102, 74, 235))
+
+    def _track_ruts(d: ImageDraw.ImageDraw) -> None:
+        for y_off in (-road_half * 0.45, road_half * 0.45):
+            d.line([(0, road_mid + y_off), (br_c0 * cell + 12, road_mid + y_off)], fill=(86, 66, 46, 150), width=9)
+            d.line([(br_c1 * cell - 12, road_mid + y_off), (w, road_mid + y_off)], fill=(86, 66, 46, 150), width=9)
+
+    img = composite_soft_layer(img, _track_ruts, blur_radius=4)
+    draw = ImageDraw.Draw(img, "RGBA")
+
+    # Arched stone bridge drop shadow onto the water
+    bx0, by0, bx1, by1 = br_c0 * cell, br_r0 * cell, br_c1 * cell, br_r1 * cell
+
+    def _bridge_shadow(d: ImageDraw.ImageDraw) -> None:
+        d.rectangle([bx0 + 4, by0 + 10, bx1 + 8, by1 + 20], fill=(10, 16, 22, 150))
+
+    img = composite_soft_layer(img, _bridge_shadow, blur_radius=8)
+    draw = ImageDraw.Draw(img, "RGBA")
+
+    # Bridge masonry flagstones with subtle arch crown brightness
+    draw.rectangle([bx0, by0, bx1, by1], fill=(126, 124, 118, 255), outline=(48, 48, 50, 255), width=2)
+    flag_w, flag_h = 24, 18
+    bridge_mid_x = (bx0 + bx1) * 0.5
+    half_span = max(1.0, (bx1 - bx0) * 0.5)
+    for row_i, fy_s in enumerate(range(by0 + 10, by1 - 10, flag_h)):
+        off = (flag_w // 2) if (row_i % 2) else 0
+        for fx_s in range(bx0 - off, bx1, flag_w):
+            sx0 = max(bx0 + 2, fx_s + 1)
+            sx1 = min(bx1 - 2, fx_s + flag_w - 1)
+            sy1 = min(by1 - 10, fy_s + flag_h - 1)
+            if sx1 <= sx0 or sy1 <= fy_s:
+                continue
+            arch_boost = int(14 * (1.0 - abs(((sx0 + sx1) * 0.5) - bridge_mid_x) / half_span))
+            dv = rng.randint(-9, 9) + arch_boost
+            c_st = (max(0, min(255, 128 + dv)), max(0, min(255, 126 + dv)), max(0, min(255, 118 + dv)), 255)
+            draw.rectangle([sx0, fy_s + 1, sx1, sy1], fill=c_st, outline=(68, 66, 62, 175), width=1)
+
+    # Low stone bridge parapets along north and south edges of roadway
+    for py_bar in (by0, by1 - 11):
+        draw.rectangle([bx0, py_bar, bx1, py_bar + 11], fill=(92, 92, 90, 255), outline=(42, 42, 44, 255), width=2)
+        for cap_x in range(bx0 + 18, bx1 - 10, 28):
+            draw.line([(cap_x, py_bar + 1), (cap_x, py_bar + 10)], fill=(54, 54, 56, 200), width=1)
+
+    # Solid stone parapet end-posts (4 x 1x1 solid wall bastions) + cliffside boulders
+    post_cells = [
+        (br_c0, br_r0 - 1),
+        (br_c0, br_r1),
+        (br_c1 - 1, br_r0 - 1),
+        (br_c1 - 1, br_r1),
+    ]
+    boulder_cells: list[tuple[int, int]] = []
+    if br_c0 >= 4:
+        boulder_cells.append((max(2, br_c0 - 3), max(1, br_r0 - 2)))
+        boulder_cells.append((max(2, br_c0 - 3), min(rows - 2, br_r1 + 1)))
+    if cols - br_c1 >= 4:
+        boulder_cells.append((min(cols - 3, br_c1 + 2), max(1, br_r0 - 2)))
+        boulder_cells.append((min(cols - 3, br_c1 + 2), min(rows - 2, br_r1 + 1)))
+    # Ensure no overlaps with post_cells
+    boulder_cells = [bc for bc in boulder_cells if bc not in set(post_cells)]
+
+    for pc, pr in post_cells:
+        px0, py0 = pc * cell, pr * cell
+        draw.rectangle([px0 + 4, py0 + 5, px0 + cell + 3, py0 + cell + 4], fill=(14, 16, 18, 120))
+        draw.rectangle([px0 + 2, py0 + 2, px0 + cell - 2, py0 + cell - 2], fill=(88, 88, 86, 255), outline=(38, 38, 40, 255), width=2)
+        draw.rectangle([px0 + 10, py0 + 10, px0 + cell - 10, py0 + cell - 10], fill=(118, 116, 110, 255), outline=(148, 146, 138, 190), width=1)
+
+    for bc, br in boulder_cells:
+        bcx, bcy = cell_center(bc, br, cell)
+        draw_boulder_polygon(draw, bcx, bcy, cell * 0.48, cell * 0.46, rng, base_rgb=(104, 102, 96), sides=10)
+        draw_boulder_polygon(draw, bcx - 4, bcy - 4, cell * 0.28, cell * 0.26, rng, base_rgb=(136, 134, 126), sides=8)
+        draw_bush(draw, bcx + 12, bcy + 10, 14, rng)
+
+    # Bank shrubs and scatter pebbles
+    for bc, br in [(1, 1), (2, rows - 2), (cols - 2, 1), (cols - 2, rows - 2), (1, br_r0 - 1), (cols - 2, br_r1)]:
+        if (bc, br) in set(post_cells) or (bc, br) in set(boulder_cells):
+            continue
+        draw_bush(draw, (bc + 0.5) * cell, (br + 0.5) * cell, rng.uniform(16, 24), rng)
+
+    img = add_grain(img, rng, strength=6)
+
+    wb = WallBuilder(prefix, cell)
+    wb.add_rect_grid(0, 0, cols, rows, "chain_outer")
+    for idx, (pc, pr) in enumerate(post_cells, 1):
+        wb.add_rect_grid(pc, pr, pc + 1, pr + 1, f"chain_post_{idx}")
+    for idx, (bc, br) in enumerate(boulder_cells, 1):
+        wb.add_rect_grid(bc, br, bc + 1, br + 1, f"chain_boulder_{idx}")
+
+    # Twin bridge post lanterns (>= 0.55 * cell clearance from parapet end-posts)
+    l1x, l1y = (br_c0 + 0.5) * cell, (br_r0 + 0.55) * cell
+    l2x, l2y = (br_c1 - 0.5) * cell, (br_r1 - 0.55) * cell
+    lamps_lit = lighting in ("dusk", "night")
+    img = draw_lamp_prop(img, l1x, l1y, active_glow=lamps_lit, style="lamp")
+    img = draw_lamp_prop(img, l2x, l2y, active_glow=lamps_lit, style="lamp")
+
+    lamp_em = make_lamp_emission(3.0, 6.0, unit_dist, intensity=0.92)
+    lights = {
+        f"light_{prefix}_001": {
+            "id": f"light_{prefix}_001",
+            "kind": "light",
+            "x": l1x,
+            "y": l1y,
+            "emission": dict(lamp_em),
+            "activeBelowAmbient": 0.5,
+        },
+        f"light_{prefix}_002": {
+            "id": f"light_{prefix}_002",
+            "kind": "light",
+            "x": l2x,
+            "y": l2y,
+            "emission": dict(lamp_em),
+            "activeBelowAmbient": 0.5,
+        },
+    }
+
+    blocked: set[tuple[int, int]] = set(post_cells) | set(boulder_cells)
+    for c in range(riv_c0, riv_c1):
+        for r in range(rows):
+            if not (br_r0 <= r < br_r1):
+                blocked.add((c, r))
+
+    pc_cells = [
+        (1, br_r0 + 1),
+        (1, min(br_r1 - 1, br_r0 + 2)),
+        (2, br_r0 + 1),
+    ]
+    enemy_cells = [
+        (br_c1 - 1, br_r0 + 1),
+        (br_c1, br_r0 + 1),
+        (br_c1, min(br_r1 - 1, br_r0 + 2)),
+        (cols - 3, br_r0 + 1),
+        (cols - 3, max(1, br_r0 - 1)),
+        (cols - 3, min(rows - 2, br_r1)),
+        (cols - 2, br_r0 + 1),
+        (min(br_c1 - 2, br_c0 + 2), br_r0 + 1),
+    ]
+
+    pins = [
+        {"label": "A", "name": "West Bank Approach", "heading": "A. West Bank Approach", "col": 2, "row": br_r0},
+        {"label": "B", "name": "Arched Stone Bridge", "heading": "B. Arched Stone Bridge (Chokepoint)", "col": (br_c0 + br_c1) // 2, "row": br_r0 + 1},
+        {"label": "C", "name": "Gorge and East Bank", "heading": "C. Rushing Gorge and East Bank", "col": min(cols - 2, br_c1 + 1), "row": min(rows - 2, br_r1 - 1)},
+    ]
+
+    sections = [
+        (
+            "A. West Bank Approach",
+            [
+                "Rutted mud road narrowing toward the western bridgehead, flanked by mossy gorge boulders that break diagonal sightlines.",
+                "Characters crouched behind the western parapet piers gain **three-quarters cover (`+5 AC`)** against fire from across the river.",
+            ],
+        ),
+        (
+            "B. Arched Stone Bridge (Chokepoint)",
+            [
+                f"Sturdy arched stone span (`{fmt_dist(br_h, unit_dist, unit_type)}` wide) bordered by waist-high stone parapets (**half cover `+2 AC`**) and four solid anchor piers.",
+                f"Twin iron post lanterns activate automatically at dusk and night (`bright {fmt_dist(3, unit_dist, unit_type)} / dim {fmt_dist(6, unit_dist, unit_type)}`).",
+                f"⚡ `[Automatic Passive — {perc_name} (Perc. {perc_val})]` Notices chipped mortar and fresh boot scrapes along the eastern keystone arch.",
+            ],
+        ),
+        (
+            "C. Rushing Gorge and East Bank",
+            [
+                "Swift blue-slate rapids cut North–South beneath the bridge; creatures knocked over the parapet enter **difficult terrain** and are swept southward by the current.",
+                "🎲 `[Active Roll — Athletics DC 14]` To swim against the gorge current or haul onto the slick rocky bank.",
+            ],
+        ),
+    ]
+
+    return {
+        "image": img.convert("RGB"),
+        "walls": wb.walls,
+        "lights": lights,
+        "pins": pins,
+        "pc_cells": pc_cells,
+        "enemy_cells": enemy_cells,
+        "blocked_cells": blocked,
+        "sections": sections,
+        "grid_opacity": 0.40,
+    }
+
+
+def build_preset_crypt(
+    cols: int, rows: int, cell: int, lighting: str, seed: int, prefix: str,
+    party: list[dict[str, Any]], unit_dist: float, unit_type: str,
+) -> dict[str, Any]:
+    rng = random.Random(seed)
+    w, h = cols * cell, rows * cell
+    inv_name, inv_val = best_passive_pc(party, "investigation")
+
+    b_x0, b_y0 = 1, 1
+    b_x1, b_y1 = cols - 1, rows - 1
+    rel_w = 3 if cols >= 14 else 2
+    rel_x = b_x1 - rel_w
+    mid_r = rows // 2
+
+    nave_w = rel_x - b_x0
+    col_w = b_x0 + (3 if nave_w >= 10 else 2)
+    col_e = rel_x - (3 if nave_w >= 10 else 2)
+    row_n = b_y0 + (2 if rows >= 11 else 1)
+    row_s = b_y1 - (3 if rows >= 11 else 2)
+    pillars = [(col_w, row_n), (col_w, row_s), (col_e, row_n), (col_e, row_s)]
+
+    # Solid dark subterranean bedrock exterior
+    img = Image.new("RGBA", (w, h), (26, 28, 34, 255))
+    draw = ImageDraw.Draw(img, "RGBA")
+    for _ in range(cols * rows * 2):
+        bx_r, by_r = rng.randint(0, w), rng.randint(0, h)
+        draw.line([(bx_r, by_r), (bx_r + rng.randint(10, 26), by_r + rng.randint(-10, 10))], fill=(40, 42, 50, 140), width=2)
+
+    # Descending stone entry stairs outside the west door (col 0)
+    st_y0, st_y1 = max(cell, (mid_r - 1) * cell), min(h - cell, (mid_r + 2) * cell)
+    draw.rectangle([0, st_y0, b_x0 * cell, st_y1], fill=(74, 76, 82, 255), outline=(34, 36, 40, 255), width=2)
+    for step_x in range(8, b_x0 * cell, 12):
+        shade = 58 + int(22 * (step_x / max(1, b_x0 * cell)))
+        draw.rectangle([step_x, st_y0 + 3, min(b_x0 * cell, step_x + 11), st_y1 - 3], fill=(shade, shade + 2, shade + 6, 255), outline=(36, 38, 44, 200), width=1)
+
+    # Flagstone floor in Main Nave
+    nx0, ny0, nx1, ny1 = b_x0 * cell, b_y0 * cell, rel_x * cell, b_y1 * cell
+    tile = cell // 2
+    for c_t in range(nx0, nx1, tile):
+        for r_t in range(ny0, ny1, tile):
+            dv = rng.randint(-10, 10)
+            draw.rectangle(
+                [c_t, r_t, min(nx1, c_t + tile), min(ny1, r_t + tile)],
+                fill=(84 + dv, 86 + dv, 92 + dv, 255),
+                outline=(48, 50, 56, 185),
+                width=1,
+            )
+            if rng.random() < 0.14:
+                draw.line([(c_t + 4, r_t + 6), (c_t + tile - 6, r_t + tile - 5)], fill=(44, 46, 52, 150), width=1)
+
+    # Ornate dark-marble checkerboard floor in East Reliquary Chamber
+    rx0, ry0, rx1, ry1 = rel_x * cell, b_y0 * cell, b_x1 * cell, b_y1 * cell
+    for ci, c_t in enumerate(range(rx0, rx1, tile)):
+        for ri, r_t in enumerate(range(ry0, ry1, tile)):
+            is_dark = (ci + ri) % 2 == 0
+            base = (68, 66, 76) if is_dark else (106, 102, 108)
+            dv = rng.randint(-6, 6)
+            draw.rectangle(
+                [c_t, r_t, min(rx1, c_t + tile), min(ry1, r_t + tile)],
+                fill=(base[0] + dv, base[1] + dv, base[2] + dv, 255),
+                outline=(42, 42, 48, 175),
+                width=1,
+            )
+
+    # Ambient occlusion along interior walls
+    def _crypt_ao(d: ImageDraw.ImageDraw) -> None:
+        d.rectangle([nx0, ny0, rx1, ry1], outline=(14, 14, 18, 140), width=18)
+        d.line([(rel_x * cell, ny0), (rel_x * cell, ry1)], fill=(14, 14, 18, 130), width=14)
+
+    img = composite_soft_layer(img, _crypt_ao, blur_radius=7)
+    draw = ImageDraw.Draw(img, "RGBA")
+
+    # Central faded stone runner carpet down the nave
+    draw.rectangle(
+        [nx0 + 12, mid_r * cell + 8, (col_e + 1) * cell, (mid_r + 1) * cell - 8],
+        fill=(94, 42, 44, 140),
+        outline=(152, 120, 68, 165),
+        width=2,
+    )
+
+    # Raised stone dais on the eastern end of the nave (half cover altar in front of secret door)
+    dais_x0 = (col_e + 1) * cell
+    dais_y0 = max(ny0 + 12, (mid_r - 2) * cell)
+    dais_y1 = min(ny1 - 12, (mid_r + 2) * cell)
+    draw.rectangle([dais_x0, dais_y0, nx1 - 6, dais_y1], fill=(104, 102, 98, 255), outline=(48, 48, 52, 255), width=2)
+    draw.rectangle([dais_x0 + 12, dais_y0 + 12, nx1 - 8, dais_y1 - 12], fill=(122, 120, 114, 255), outline=(66, 66, 70, 230), width=2)
+    # Stone cenotaph / altar on the dais
+    alt_cx = (dais_x0 + nx1) * 0.5
+    alt_cy = (mid_r + 0.5) * cell
+    draw_sarcophagus(draw, alt_cx, alt_cy, cell * 0.72, cell * 1.45, vertical=False)
+
+    # Stone sarcophagi in northern and southern nave alcoves (half cover)
+    sarc_cx = ((col_w + col_e + 1) * 0.5) * cell
+    draw_sarcophagus(draw, sarc_cx, (b_y0 + 0.55) * cell, cell * 1.65, cell * 0.72, vertical=False)
+    draw_sarcophagus(draw, sarc_cx, (b_y1 - 0.55) * cell, cell * 1.65, cell * 0.72, vertical=False)
+
+    # Reliquary chamber props: gilded shrine pedestal & iron-bound coffer
+    rel_cx, rel_cy = (rel_x + rel_w * 0.55) * cell, (mid_r + 0.5) * cell
+    draw.rectangle([rel_cx - 20 + 4, rel_cy - 28 + 5, rel_cx + 20 + 4, rel_cy + 28 + 5], fill=(12, 12, 16, 120))
+    draw.rectangle([rel_cx - 20, rel_cy - 28, rel_cx + 20, rel_cy + 28], fill=(122, 114, 100, 255), outline=(54, 48, 42, 255), width=2)
+    draw.rectangle([rel_cx - 10, rel_cy - 14, rel_cx + 10, rel_cy + 14], fill=(186, 148, 66, 255), outline=(92, 68, 28, 255), width=2)
+    draw_crate(draw, rx0 + 16, ry0 + 16, 32, 26, rng)
+    draw_crate(draw, rx0 + 16, ry1 - 46, 32, 26, rng)
+
+    # 4 symmetric 1x1 structural stone columns
+    for pc, pr in pillars:
+        px0, py0 = pc * cell, pr * cell
+        draw.rectangle([px0 + 5, py0 + 6, px0 + cell + 3, py0 + cell + 4], fill=(10, 10, 14, 135))
+        draw.rectangle([px0 + 2, py0 + 2, px0 + cell - 2, py0 + cell - 2], fill=(72, 74, 80, 255), outline=(34, 36, 40, 255), width=2)
+        draw.rectangle([px0 + 10, py0 + 10, px0 + cell - 10, py0 + cell - 10], fill=(104, 106, 112, 255), outline=(144, 146, 152, 190), width=1)
+        draw.line([(px0 + 10, py0 + 10), (px0 + cell - 10, py0 + cell - 10)], fill=(62, 64, 70, 150), width=1)
+        draw.line([(px0 + cell - 10, py0 + 10), (px0 + 10, py0 + cell - 10)], fill=(62, 64, 70, 150), width=1)
+
+    img = add_grain(img, rng, strength=5)
+    draw = ImageDraw.Draw(img, "RGBA")
+
+    # Walls: outer crypt masonry, unlocked west door, secret east reliquary door, 4 solid columns
+    wb = WallBuilder(prefix, cell)
+    wb.add_rect_grid(0, 0, cols, rows, "chain_outer")
+    wb.add_grid(b_x0, b_y0, b_x1, b_y0, "chain_crypt_n")
+    wb.add_grid(b_x0, b_y1, b_x1, b_y1, "chain_crypt_s")
+    wb.add_grid(b_x1, b_y0, b_x1, b_y1, "chain_crypt_e")
+    wb.add_segmented_v(b_x0, b_y0, b_y1, "chain_crypt_w", doors={mid_r: ("door", True, False)})
+    wb.add_segmented_v(rel_x, b_y0, b_y1, "chain_reliquary", doors={mid_r: ("secret-door", True, False)})
+    for idx, (pc, pr) in enumerate(pillars, 1):
+        wb.add_rect_grid(pc, pr, pc + 1, pr + 1, f"chain_col_{idx}")
+
+    # Paint walls — secret-door paints seamlessly as solid stone masonry!
+    paint_grid_walls(draw, wb.walls, thickness=10)
+
+    # 2 flickering iron braziers in the central nave (>= 25px from every wall/column)
+    brz_c = (col_w + col_e) // 2
+    brz_r1 = row_n + 1
+    brz_r2 = row_s - 1
+    b1x, b1y = cell_center(brz_c, brz_r1, cell)
+    b2x, b2y = cell_center(brz_c, brz_r2, cell)
+    img = draw_lamp_prop(img, b1x, b1y, active_glow=True, style="brazier")
+    img = draw_lamp_prop(img, b2x, b2y, active_glow=True, style="brazier")
+
+    brazier_em = make_lamp_emission(3.0, 6.0, unit_dist, color="#ff8c32", intensity=0.95, kind="torch")
+    lights = {
+        f"light_{prefix}_001": {
+            "id": f"light_{prefix}_001",
+            "kind": "light",
+            "x": b1x,
+            "y": b1y,
+            "emission": dict(brazier_em),
+        },
+        f"light_{prefix}_002": {
+            "id": f"light_{prefix}_002",
+            "kind": "light",
+            "x": b2x,
+            "y": b2y,
+            "emission": dict(brazier_em),
+        },
+    }
+
+    blocked: set[tuple[int, int]] = set(pillars) | {(brz_c, brz_r1), (brz_c, brz_r2)}
+    for c in range(cols):
+        for r in range(rows):
+            if not (b_x0 <= c < b_x1 and b_y0 <= r < b_y1):
+                blocked.add((c, r))
+
+    pc_cells = [
+        (b_x0 + 1, mid_r - 1),
+        (b_x0 + 1, mid_r),
+        (b_x0 + 1, min(b_y1 - 1, mid_r + 1)),
+    ]
+    enemy_cells = [
+        (col_e + 1, mid_r - 1),
+        (col_e + 1, min(b_y1 - 1, mid_r + 1)),
+        (col_e - 1, mid_r),
+        (col_e, mid_r - 1),
+        (col_e, min(b_y1 - 1, mid_r + 1)),
+        (rel_x + 1, mid_r),
+        (rel_x + 1, max(b_y0 + 1, mid_r - 2)),
+        (rel_x + 1, min(b_y1 - 2, mid_r + 2)),
+    ]
+
+    pins = [
+        {"label": "A", "name": "Central Nave", "heading": "A. West Entry and Central Nave", "col": b_x0 + 2, "row": mid_r},
+        {"label": "B", "name": "Raised Dais", "heading": "B. Raised Dais and Stone Sarcophagi", "col": col_e + 1, "row": mid_r},
+        {"label": "C", "name": "Hidden Reliquary", "heading": "C. Hidden East Reliquary (Secret Door)", "col": rel_x + 1, "row": max(b_y0 + 1, mid_r - 1)},
+    ]
+
+    sections = [
+        (
+            "A. West Entry and Central Nave",
+            [
+                "Unlocked heavy crypt door opens onto a flagstone nave flanked by four 1x1 masonry columns that cast crisp dynamic shadows.",
+                f"Two iron braziers burn steadily (`bright {fmt_dist(3, unit_dist, unit_type)} / dim {fmt_dist(6, unit_dist, unit_type)}`) in the center of the hall.",
+            ],
+        ),
+        (
+            "B. Raised Dais and Stone Sarcophagi",
+            [
+                "Two carved stone sarcophagi along the north and south alcoves and the raised eastern cenotaph provide **half cover (`+2 AC`)**.",
+                f"⚡ `[Automatic Passive — {inv_name} (Inv. {inv_val})]` Notices faint scraping grooves on the flagstones directly behind the eastern dais.",
+            ],
+        ),
+        (
+            "C. Hidden East Reliquary (Secret Door)",
+            [
+                "Sealed behind a **secret door on the east partition wall** (`closed: true`, invisible in Atlas VTT Player View until opened by the DM).",
+                "🎲 `[Active Roll — Investigation or Perception DC 15]` To locate the recessed catch behind the dais and slide open the reliquary panel.",
+                "Houses a gilded shrine pedestal and two iron-bound storage coffers.",
+            ],
+        ),
+    ]
+
+    return {
+        "image": img.convert("RGB"),
+        "walls": wb.walls,
+        "lights": lights,
+        "pins": pins,
+        "pc_cells": pc_cells,
+        "enemy_cells": enemy_cells,
+        "blocked_cells": blocked,
+        "sections": sections,
+        "grid_opacity": 0.40,
+    }
+
+
 PRESET_BUILDERS = {
     "whiteboard": build_preset_whiteboard,
     "alley": build_preset_alley,
     "road": build_preset_road,
     "hills": build_preset_hills,
     "interior": build_preset_interior,
+    "camp": build_preset_camp,
+    "bridge": build_preset_bridge,
+    "crypt": build_preset_crypt,
 }
 
 
@@ -2118,7 +2958,7 @@ def main(argv: list[str] | None = None) -> int:
     thumb_jpg.save(thumb_jpg_path, "JPEG", quality=85)
 
     atlasmap_path = scenes_dir / f"{scene_name}.atlasmap"
-    atlasmap_path.write_text(json.dumps(scene_data, ensure_ascii=False, indent=2), encoding="utf-8")
+    atlasmap_path.write_text(json.dumps(scene_data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     map_record = {
         "id": map_id,
@@ -2142,7 +2982,7 @@ def main(argv: list[str] | None = None) -> int:
         },
     }
     map_json_path = maps_dir / f"{map_id}.json"
-    map_json_path.write_text(json.dumps(map_record, ensure_ascii=False, indent=2), encoding="utf-8")
+    map_json_path.write_text(json.dumps(map_record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     scene_record = {
         "mapPath": scene_rel,
@@ -2158,10 +2998,10 @@ def main(argv: list[str] | None = None) -> int:
         },
     }
     scene_json_path = scenes_dir / f"{scene_id}.json"
-    scene_json_path.write_text(json.dumps(scene_record, ensure_ascii=False, indent=2), encoding="utf-8")
+    scene_json_path.write_text(json.dumps(scene_record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     note_path = notes_dir / f"{scene_name}.md"
-    note_path.write_text(dashboard_md, encoding="utf-8")
+    note_path.write_text(dashboard_md, encoding="utf-8", newline="\n")
 
     print(f"Generated '{scene_name}' (collection={collection}, preset={args.preset}, {cols}x{rows}, lighting={lighting}, tokens={len(tokens)}, walls={len(built['walls'])}, lights={len(built['lights'])})")
     print(f"  Scene:     {atlasmap_path}")

@@ -57,12 +57,23 @@ Use the bundled CLI toolkit: `.agents/skills/dungeons-and-maps/scripts/atlas_sce
 
 ### Phase 3 — Compendium Location Note + DM Dashboard
 1. Author the Compendium Location Note (`<Vault>/Locations/...`) with a Mermaid topology diagram, 5-second sensory read-aloud, and campaign hooks.
-2. Author the DM Dashboard from `.agents/skills/dungeons-and-maps/resources/dashboard_template.md`, ensuring every Note Pin matches a `### H3` heading 1:1 and total size stays `< 30 KB`.
+2. Author the DM Dashboard from `.agents/skills/dungeons-and-maps/resources/dashboard_template.md`, or bootstrap a `< 5 KB` starter Dashboard straight from an existing `.atlasmap` (matching every Note Pin 1:1 to an `### H3` heading and pulling party passives from `campaign.config.json`):
+   ```bash
+   python .agents/skills/dungeons-and-maps/scripts/atlas_scene_tools.py scaffold-dashboard "<path.atlasmap>" --out "<Vault>/atlas-vtt/collections/{{ATLAS_COLLECTION}}/notes/<Name> - Dashboard.md" --name "<Title>"
+   ```
+   Ensure every Note Pin matches a `### H3` heading 1:1 and total size stays strictly `< 30 KB`.
 
-### Phase 4 — Scene `.atlasmap` Assembly & Visual Verification
+### Phase 4 — Scene `.atlasmap` Assembly, `.dd2vtt`/`.uvtt` Import & Visual Verification
 > [!IMPORTANT] Before Writing to `.atlasmap`
 > Always have the DM **close that scene's tab in Obsidian FIRST** before running scripts that modify an existing `.atlasmap` file (otherwise Atlas may flush stale RAM state over disk edits).
 
+0. **Importing Dungeondraft / Dungeon Alchemist Maps (`.dd2vtt` / `.uvtt`):**
+   - Atlas VTT `0.16.0` supports native `.dd2vtt` / `.uvtt` import (background image, grid, walls, doors/portals, and local lights come across automatically).
+   - Immediately after importing or hand-walling a scene, run **`audit-walls`** to catch zero-length walls, duplicate overlapping segments, near-miss endpoint gaps (Dynamic Lighting leak cracks), and lights placed too close to walls (`< 20 px`):
+     ```bash
+     python .agents/skills/dungeons-and-maps/scripts/atlas_scene_tools.py audit-walls "<path.atlasmap>" --gap-threshold 18 --strict
+     ```
+   - Then run **`scaffold-dashboard`** (above) to generate a compact `< 5 KB` DM Dashboard pre-populated with scene metadata, placed tokens, and party passives.
 1. **Auto-Detect Natural Light Clusters (crystals, braziers, torches, glowing pools):**
    ```bash
    python .agents/skills/dungeons-and-maps/scripts/atlas_scene_tools.py detect-lights "<image>" --color amber --out "scratch/lights_check.png" --json "scratch/lights.json"
@@ -81,6 +92,7 @@ Use the bundled CLI toolkit: `.agents/skills/dungeons-and-maps/scripts/atlas_sce
    - Link each pin to `atlas-vtt/collections/{{ATLAS_COLLECTION}}/notes/<Name> - Dashboard.md#<Exact H3>`.
 6. **Mandatory Visual & Automated Validation:**
    ```bash
+   python .agents/skills/dungeons-and-maps/scripts/atlas_scene_tools.py audit-walls "<path.atlasmap>" --gap-threshold 18 --strict
    python .agents/skills/dungeons-and-maps/scripts/atlas_scene_tools.py verify-scene "<path.atlasmap>" --out "scratch/verify.png"
    python .agents/skills/dungeons-and-maps/scripts/atlas_scene_tools.py validate "<path.atlasmap>" --dashboard "<path Dashboard.md>"
    ```

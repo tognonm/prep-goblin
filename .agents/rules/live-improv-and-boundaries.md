@@ -15,6 +15,7 @@ Every skill in the framework owns a crisp perimeter; agents must never blur thes
 | **`dungeons-and-maps`** | Planned canonical dungeons and tactical locations. | Full two-level package (`<Vault>/Locations/...` + Dashboard `< 30 KB` + `.atlasmap` + Encounter). | Not triggered for throwaway improvised ambushes. |
 | **`encounters-and-loot`** | Formal 5e XP balancing, hoard treasure, and persistent Atlas Encounter `.json` files. | `<Vault>/Encounters/`, `<Vault>/atlas-vtt/.../encounters/`. | Does not replace fast live table rolls from `live-improv`. |
 | **Vault Compendium (`Locations/` / `NPCs/` / `Lore/`)** | Only pathway for promoting locations, NPCs, and lore into permanent canon (after DM OK). | `<Vault>/Locations/`, `<Vault>/NPCs/`, `<Vault>/Lore/`. | Never saves ephemeral bystanders before DM confirmation. |
+| **`transcript-to-recap`** | Post-session audio or Discord transcript processing (`.srt`, `.vtt`, `.txt`) via `prep_transcript.py`. | Chat Extraction Review Sheet; after DM approval, stages candidate improvised entities in `<Vault>/Campaign/Improv Log.md` and hands off canon updates to `session-recap` & `living-world`. | Never writes canonical notes, updates `World State.md`, or advances clocks before explicit DM review. |
 | **`session-recap` & `living-world`** | Post-session wrap-up: recap, clock updates, and triage of `Improv Log.md`. | `<Vault>/Sessions/`, `<Vault>/Campaign/World State.md`, `Factions/`, `Improv Log.md`. | Never invents events that did not happen at the table. |
 
 ---
@@ -43,5 +44,5 @@ To keep campaign canon spotless without losing improvised table gold:
 ## 4. Setting Adaptation & Evolving Wildcard Scenes
 - **Location-Aware Flavor:** Tables in `<Vault>/Tables/` and procedural battlemaps adapt to the party's **current location** read from `<Vault>/Campaign/World State.md` (or specified by the DM).
 - **Evolving Wildcard Battlemap Pack:**
-  - **Universal Starter Set:** `whiteboard` (dry-erase), `alley` (urban), `road` (country road & river), `hills` (rocky moorland), `interior` (tavern/shop/house).
+  - **Universal Starter Set:** `whiteboard` (dry-erase), `alley` (urban), `road` (country road & river), `hills` (rocky moorland), `interior` (tavern/shop/house), `camp` (woodland camp), `bridge` (stone river gorge bridge), `crypt` (forgotten subterranean crypt).
   - **Regional Expansion:** As the campaign enters new biomes (swamps, ships, arctic passes, underdark caverns, fortresses), propose adding tailored regional presets and `Wildcard - *` scenes.

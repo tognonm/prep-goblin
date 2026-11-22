@@ -35,6 +35,11 @@ def load_defaults() -> tuple[Path, str]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
     default_vault, default_collection = load_defaults()
     ap = argparse.ArgumentParser(description="Register a token image for Atlas VTT 0.16.0.")
     ap.add_argument("image", help="Path to source image (PNG/JPG/WEBP)")
@@ -79,12 +84,13 @@ def main(argv: list[str] | None = None) -> int:
         "modifiedAt": ts,
         "thumbnailPath": thumb_rel,
     }
-    if a.statblock:
-        token_entry["statblockPath"] = a.statblock
+    statblock_norm = a.statblock.strip().replace("\\", "/").lstrip("/") if a.statblock else None
+    if statblock_norm:
+        token_entry["statblockPath"] = statblock_norm
     if a.player:
         token_entry["playerCharacter"] = True
 
-    print(("[dry-run] " if a.dry_run else "") + f"{a.name} -> {rel} ({tid}) [collection: {a.collection}, statblock: {a.statblock}]")
+    print(("[dry-run] " if a.dry_run else "") + f"{a.name} -> {rel} ({tid}) [collection: {a.collection}, statblock: {statblock_norm}]")
     if a.dry_run:
         return 0
 
@@ -99,8 +105,9 @@ def main(argv: list[str] | None = None) -> int:
     tokens_dir.mkdir(parents=True, exist_ok=True)
     token_file = tokens_dir / f"{tid}.json"
     token_file.write_text(
-        json.dumps({"atlasRecord": {"format": 1, **token_entry}}, ensure_ascii=False, indent=2),
+        json.dumps({"atlasRecord": {"format": 1, **token_entry}}, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
+        newline="\n",
     )
 
     if a.update_metadata:
@@ -115,7 +122,11 @@ def main(argv: list[str] | None = None) -> int:
                     f"tokens:{tag.lower()}", {"id": tag.lower(), "name": tag, "group": "tokens"}
                 )
             meta.setdefault("assets", {})[tid] = token_entry
-            meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+            meta_path.write_text(
+                json.dumps(meta, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
 
     return 0
 

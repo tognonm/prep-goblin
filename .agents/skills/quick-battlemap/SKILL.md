@@ -2,9 +2,9 @@
 name: quick-battlemap
 description: >-
   Generates complete procedural battlemaps and Atlas VTT 0.16.0 (schema v4) scenes in 2-3 seconds
-  for improvised combat, or points the DM to 5 pre-built Wildcard presets (whiteboard, alley, road,
-  hills, interior) complete with walls, openable doors, secret doors, dynamic lighting, party tokens
-  from campaign.config.json, and enemies parsed from <Vault>/Monsters/.
+  for improvised combat, or points the DM to 8 pre-built Wildcard presets (whiteboard, alley, road,
+  hills, interior, camp, bridge, crypt) complete with walls, openable doors, secret doors, dynamic
+  lighting, party tokens from campaign.config.json, and enemies parsed from <Vault>/Monsters/.
 ---
 
 # Instant Tactical Battlemap (`quick-battlemap` — Atlas VTT `0.16.0`)
@@ -16,7 +16,7 @@ This skill solves unplanned combat during live sessions on **Atlas VTT `0.16.0`*
 ## 1. Mode A (Zero-Wait Wildcards) vs. Mode B (On-Demand Generation)
 
 ### Mode A — Pre-Generated Wildcard Scenes
-You can pre-generate **5 Wildcard scenes** in your Atlas collection (`campaign.config.json` → `atlas_collection`) with no fixed enemies, party tokens already snapped on the grid, walls/doors/lights pre-wired, and linked DM notes:
+You can pre-generate **8 Wildcard scenes** in your Atlas collection (`campaign.config.json` → `atlas_collection`) with no fixed enemies, party tokens already snapped on the grid, walls/doors/lights pre-wired, and linked DM notes:
 
 | Recommended Wildcard Scene | Preset | Grid | Default Light | Tabletop Use Case |
 | :--- | :--- | :---: | :---: | :--- |
@@ -25,6 +25,9 @@ You can pre-generate **5 Wildcard scenes** in your Atlas collection (`campaign.c
 | **`Wildcard - Country Road`** | `road` | `18x12` | `day` | Highway encounters, halted merchant wagon cover, 2 sight-blocking boulders, riverbank reeds |
 | **`Wildcard - Rocky Hills`** | `hills` | `18x12` | `dusk` | Limestone moorland with 3 rock outcrops (broken LoS), ancient menhir, campfire |
 | **`Wildcard - Building Interior`** | `interior` | `14x10` | `night` | Shop/tavern/house: main hall with counter, tables, 2 pillars, backroom, and **1 secret door** to rear alley |
+| **`Wildcard - Forest Camp`** | `camp` | `16x12` | `night` | Woodland clearing with 3 angled canvas tents, central roaring campfire, fallen log cover, and 4 ancient tree sight-blockers |
+| **`Wildcard - Stone Bridge`** | `bridge` | `18x12` | `day` | North–South rocky river gorge spanned by an arched stone bridge, parapet piers, cliffside boulders, and 2 bridge post lanterns |
+| **`Wildcard - Forgotten Crypt`** | `crypt` | `16x12` | `night` | Subterranean flagstone crypt with 4 shadow-casting columns, sarcophagi, raised dais, west door, 2 braziers, and **1 hidden east reliquary secret door** |
 
 - **How to run them live:** Open from Atlas VTT's *Scenes* library, drag enemy tokens from *Tokens*, and play immediately. Afterwards, run *Lighting settings → Forget explored areas* to reset.
 
@@ -49,13 +52,16 @@ python .agents/skills/quick-battlemap/scripts/quick_battlemap.py --preset <prese
 | *"Quick 16x12 whiteboard"* | `python .agents/skills/quick-battlemap/scripts/quick_battlemap.py --preset whiteboard --name "Quick Whiteboard" --cols 16 --rows 12 --lighting day` |
 | *"Rocky hills at dusk with 3 skeleton sentries"* | `python .agents/skills/quick-battlemap/scripts/quick_battlemap.py --preset hills --name "Hills Skirmish" --lighting dusk --enemies "Skeleton Sentry:3"` |
 | *"Shop interior at night with 2 guards (11 HP)"* | `python .agents/skills/quick-battlemap/scripts/quick_battlemap.py --preset interior --name "Shop Skirmish" --lighting night --enemies "Guard:2@11"` |
+| *"Night camp ambush with 3 wolves (11 HP)"* | `python .agents/skills/quick-battlemap/scripts/quick_battlemap.py --preset camp --name "Camp Ambush" --lighting night --enemies "Wolf:3@11"` |
+| *"Daytime bridge toll blockade with 3 road raiders"* | `python .agents/skills/quick-battlemap/scripts/quick_battlemap.py --preset bridge --name "Bridge Blockade" --lighting day --enemies "Road Raider:3"` |
+| *"Subterranean crypt with 4 skeleton sentries"* | `python .agents/skills/quick-battlemap/scripts/quick_battlemap.py --preset crypt --name "Crypt Skirmish" --lighting night --enemies "Skeleton Sentry:4"` |
 | *"Dry-run country road at dusk with 3 wolves (11 HP), new seed"* | `python .agents/skills/quick-battlemap/scripts/quick_battlemap.py --preset road --name "Road Wolves" --lighting dusk --enemies "Wolf:3@11" --seed 77 --dry-run` |
 
 ---
 
 ## 3. CLI Reference (`scripts/quick_battlemap.py`)
 
-- `--preset {whiteboard,alley,road,hills,interior}` *(required)*: Procedural art, wall layout, doors, lights, and Note Pins.
+- `--preset {whiteboard,alley,road,hills,interior,camp,bridge,crypt}` *(required)*: Procedural art, wall layout, doors, lights, and Note Pins.
 - `--name "<Scene Name>"`: Display name in Atlas VTT and base filename for `.atlasmap`, `.thumb.jpg`, and `notes/<Name>.md`.
 - `--cols <int>`, `--rows <int>`, `--cell <int>`: Grid size (min `10x8`, default `70` px per cell).
 - `--lighting {day,dusk,night}`: Controls `ambient` (`1.0` / `0.35` / `0.0`), activates `dnd5e-torch` on the configured torchbearer PC, and toggles ambient lamps/campfires.
