@@ -1,13 +1,13 @@
-# Demiurge Core
+# Prep Goblin
 
-![Demiurge Core — Agentic DM Framework for Obsidian & Atlas VTT](docs/hero-banner.jpg)
+![Prep Goblin — Agentic DM Framework for Obsidian & Atlas VTT](docs/hero-banner.jpg)
 
-[![CI](https://github.com/tognonm/demiurge-core/actions/workflows/ci.yml/badge.svg)](https://github.com/tognonm/demiurge-core/actions/workflows/ci.yml)
+[![CI](https://github.com/tognonm/prep-goblin/actions/workflows/ci.yml/badge.svg)](https://github.com/tognonm/prep-goblin/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg)](requirements.txt)
 [![Atlas VTT 0.16.0](https://img.shields.io/badge/Atlas%20VTT-0.16.0%20(schema%20v4)-7C3AED.svg)](https://github.com/atlas-vtt/atlas-vtt)
 
-**Demiurge Core** is an open-source, local-first **agentic Dungeon Master framework** for running D&D 5e campaigns with **[Obsidian](https://obsidian.md/)** and **[Atlas VTT 0.16.0](https://github.com/atlas-vtt/atlas-vtt)**.
+**Prep Goblin** is an open-source, local-first **agentic Dungeon Master framework** for running D&D 5e campaigns with **[Obsidian](https://obsidian.md/)** and **[Atlas VTT 0.16.0](https://github.com/atlas-vtt/atlas-vtt)**.
 
 It pairs strict narrative governance (**DM-as-Reviewer** — the AI never invents canon behind your back) with **10 modular agent skills**, **cross-IDE agent adapters**, **native Obsidian Bases**, a clean two-level vault architecture, and **11 tested Python CLI toolkits** covering 60-second campaign bootstrapping, instant procedural battlemaps, Atlas VTT scene auditing, encounter math, player spoiler firewalls, anti-canon-drift context packs, and audio/Discord transcript preprocessing.
 
@@ -25,7 +25,7 @@ From a single 2-second CLI command (`quick_battlemap.py`) to a validated **Atlas
 
 - **60-Second Campaign Setup Wizard (`scripts/init_campaign.py`):** Bootstraps your custom campaign vault from `template-vault/`, generates a fresh campaign UUID v4 and Atlas collection, creates custom PC notes plus `400×400` heraldic monogram WebP tokens, converts grid units (`feet` or `meters`), updates `campaign.config.json` and `AGENTS.md`, and optionally pre-renders 8 Wildcard battlemaps.
 - **DM-as-Reviewer Governance (`AGENTS.md` + 7 Rules):** Clear boundaries separating technical automation (XP budgets, YAML, `.atlasmap` assembly, validation) from narrative canon (NPCs, lore, temples, handouts, secrets).
-- **Multi-Agent IDE Support (`scripts/sync_agent_adapters.py`):** Works out of the box with **Antigravity**, **Codex**, **Claude Code** (`CLAUDE.md`), **Cursor** (`.cursor/rules/demiurge-core.mdc`), and **GitHub Copilot** (`.github/copilot-instructions.md`). All adapter bridges are auto-generated from `AGENTS.md` and `.agents/` as the single source of truth and drift-checked in CI.
+- **Multi-Agent IDE Support (`scripts/sync_agent_adapters.py`):** Works out of the box with **Antigravity**, **Codex**, **Claude Code** (`CLAUDE.md`), **Cursor** (`.cursor/rules/prep-goblin.mdc`), and **GitHub Copilot** (`.github/copilot-instructions.md`). All adapter bridges are auto-generated from `AGENTS.md` and `.agents/` as the single source of truth and drift-checked in CI.
 - **Zero-Overlap Skill Architecture (10 Modular Skills):** Distinct scopes for session prep, live improvisation, instant tactical battlemaps, canonical dungeon building, encounter balancing, statblocks, token art registration, audio/Discord transcript preprocessing, post-session recaps, and living-world faction clocks.
 - **Two-Level Vault Model (`< 32 KB` Atlas Safe) + Native Obsidian Bases:** Separates rich Lore/Location notes from ultra-lean Atlas VTT Linked Note Dashboards (`< 30 KB`, respecting Atlas VTT's hard 32 KB ceiling) with 1:1 `### H3` Note Pin anchors, **pre-calculated party passive checks** (`⚡ Automatic Passive` vs. `🎲 Active Roll`), and native Obsidian Bases (`Items/Loot.base` wired into Atlas `lootBases` and `Campaign/Campaign Board.base`).
 - **11 Tested Python CLI Toolkits:** Covering campaign setup, full Atlas vault linting, player spoiler firewall exports (Quartz / Discord / single Markdown), anti-canon-drift AI context packs, 5e encounter math (`2024` & `2014`), transcript cleaning/chunking, 8 procedural battlemap presets, Atlas wall/light auditing & dashboard scaffolding, live Markdown table rolling, and token registration.
@@ -94,7 +94,7 @@ All **11 Python CLI tools** use only Python 3.10+ stdlib plus `Pillow`, `numpy`,
 | :--- | :--- | :--- |
 | **`scripts/init_campaign.py`** | **60-Second Setup Wizard:** Creates a custom campaign vault, UUID, collection, grid units (`feet`/`meters`), PC notes, monogram WebP tokens, and optional Wildcard maps. | `python scripts/init_campaign.py` |
 | **`scripts/lint_vault.py`** | **Vault & Full Atlas Linter:** Audits YAML frontmatter, broken `[[wikilinks]]`, Atlas 32 KB limits, token `imagePath`/`statblockPath`, `.atlasmap` pin `#Heading` anchors, `Location` scene refs, and un-triaged `Improv Log.md` `review` rows. | `python scripts/lint_vault.py --strict-links --full-atlas` |
-| **`scripts/sync_agent_adapters.py`** | **Multi-Agent Adapter Sync:** Regenerates and drift-checks `CLAUDE.md`, `.cursor/rules/demiurge-core.mdc`, and `.github/copilot-instructions.md` from `AGENTS.md` and `.agents/`. | `python scripts/sync_agent_adapters.py --check` |
+| **`scripts/sync_agent_adapters.py`** | **Multi-Agent Adapter Sync:** Regenerates and drift-checks `CLAUDE.md`, `.cursor/rules/prep-goblin.mdc`, and `.github/copilot-instructions.md` from `AGENTS.md` and `.agents/`. | `python scripts/sync_agent_adapters.py --check` |
 | **`scripts/export_player_view.py`** | **Spoiler Firewall & Player Portal:** Exports a player-safe Quartz vault or single Markdown handout; strips `DM Secret`/`spoiler` callouts and `<!-- dm-only -->` blocks, excludes private folders & `visibility: dm-only` notes, sanitizes secret links, and runs an independent `--verify` leak audit. | `python scripts/export_player_view.py --out player-portal --format vault --verify` |
 | **`scripts/build_context_pack.py`** | **Anti-Canon-Drift Context Compiler:** Compiles a byte-budgeted Markdown snapshot (party passives, `World State.md`, active quests, factions, recent sessions, pending improv rows, and 1-hop current location). | `python scripts/build_context_pack.py --max-bytes 12000 --out context-pack.md` |
 | **`scripts/build_encounter.py`** | **5e Encounter Builder:** Computes 5e XP budgets for **`2024`** (Low/Moderate/High) or **`2014`** (Easy/Medium/Hard/Deadly with size multiplier), action-economy ratio, Markdown encounter note, and Atlas VTT `encounter-*.json`. | `python scripts/build_encounter.py --name "Alley Ambush" --enemies "Road Raider:2,Skeleton Sentry:1" --ruleset 2024 --dry-run` |
@@ -135,8 +135,8 @@ Install these community plugins inside your Obsidian vault (`Settings → Commun
 Requires **Python 3.10+**.
 
 ```bash
-git clone https://github.com/tognonm/demiurge-core.git
-cd demiurge-core
+git clone https://github.com/tognonm/prep-goblin.git
+cd prep-goblin
 python -m pip install -r requirements.txt
 ```
 
@@ -210,11 +210,11 @@ python scripts/init_campaign.py \
 
 ## Multi-Agent IDE Support
 
-Demiurge Core keeps **`AGENTS.md`** and **`.agents/`** as the single canonical source of truth and provides thin, automatically synchronized bridge files for major AI coding environments:
+Prep Goblin keeps **`AGENTS.md`** and **`.agents/`** as the single canonical source of truth and provides thin, automatically synchronized bridge files for major AI coding environments:
 
 - **Antigravity / OpenAI Codex / Generic Agents:** Read `AGENTS.md` and `.agents/` directly.
 - **Claude Code:** Reads [`CLAUDE.md`](CLAUDE.md).
-- **Cursor:** Auto-applies [`.cursor/rules/demiurge-core.mdc`](.cursor/rules/demiurge-core.mdc).
+- **Cursor:** Auto-applies [`.cursor/rules/prep-goblin.mdc`](.cursor/rules/prep-goblin.mdc).
 - **GitHub Copilot:** Reads [`.github/copilot-instructions.md`](.github/copilot-instructions.md).
 
 Whenever you add or edit a rule in `.agents/rules/` or a skill in `.agents/skills/`, regenerate and verify all adapters in one command:
@@ -236,7 +236,7 @@ python scripts/sync_agent_adapters.py --check
 ├── campaign.config.json             # Central config (vault, Atlas collection, units, party, passives, presets)
 ├── requirements.txt                 # Minimal Python dependencies (Pillow, numpy, PyYAML)
 ├── .cursor/
-│   └── rules/demiurge-core.mdc      # Auto-synced Cursor always-applied governance bridge
+│   └── rules/prep-goblin.mdc      # Auto-synced Cursor always-applied governance bridge
 ├── .github/
 │   ├── copilot-instructions.md      # Auto-synced GitHub Copilot governance bridge
 │   └── workflows/ci.yml             # Cross-platform CI (Ubuntu 3.11/3.13 + Windows 3.13)

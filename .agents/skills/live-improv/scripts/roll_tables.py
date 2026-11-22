@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Markdown rollable table engine for Obsidian + Atlas VTT live improvisation (Demiurge Core).
+"""Markdown rollable table engine for Obsidian + Atlas VTT live improvisation (Prep Goblin).
 
 Dynamically discovers all rollable Markdown tables (`| dN | ... |`) inside
 `<Vault>/Tables/`, supports configurable presets from `campaign.config.json`

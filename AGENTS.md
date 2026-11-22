@@ -1,6 +1,6 @@
 # Vault Governance & Conventions: {{CAMPAIGN_NAME}}
 
-> **Governance Template:** Replace `{{CAMPAIGN_NAME}}`, the vault folder (`Vault/` or `template-vault/`), the Atlas collection name (`Campaign`), and your party roster below and in `campaign.config.json` to tailor **Demiurge Core** to your campaign.
+> **Governance Template:** Replace `{{CAMPAIGN_NAME}}`, the vault folder (`Vault/` or `template-vault/`), the Atlas collection name (`Campaign`), and your party roster below and in `campaign.config.json` to tailor **Prep Goblin** to your campaign.
 
 This file defines the foundational rules every AI agent (and Dungeon Master) must follow when operating inside the **{{CAMPAIGN_NAME}}** vault with **Obsidian** and **Atlas VTT `0.16.0`**.
 

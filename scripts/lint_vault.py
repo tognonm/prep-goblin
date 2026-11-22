@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Vault linter for Obsidian + Atlas VTT 0.16.0 (Demiurge Core).
+"""Vault linter for Obsidian + Atlas VTT 0.16.0 (Prep Goblin).
 
 Checks:
 1. Valid YAML frontmatter in all Markdown notes.

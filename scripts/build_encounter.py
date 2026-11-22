@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""5e XP Budget Calculator & Atlas VTT 0.16.0 Encounter JSON Builder (Demiurge Core).
+"""5e XP Budget Calculator & Atlas VTT 0.16.0 Encounter JSON Builder (Prep Goblin).
 
 Calculates combat encounter difficulty under D&D 5e 2024 (Low / Moderate / High,
 no size multiplier) or 2014 (Easy / Medium / Hard / Deadly, with standard

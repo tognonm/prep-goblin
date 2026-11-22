@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audio / Discord Session Transcript Preprocessor for Demiurge Core.
+"""Audio / Discord Session Transcript Preprocessor for Prep Goblin.
 
 Cleans raw `.srt`, `.vtt`, and `.txt` session transcripts by stripping
 timestamps, cue IDs, inline caption tags, empty/filler noise, and duplicate

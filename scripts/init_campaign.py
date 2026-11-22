@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""60-second Campaign Setup Wizard for Demiurge Core (Obsidian + Atlas VTT 0.16.0).
+"""60-second Campaign Setup Wizard for Prep Goblin (Obsidian + Atlas VTT 0.16.0).
 
 Supports both interactive prompts and full `--non-interactive` CLI flags for
 automation and isolated testing.
@@ -1192,7 +1192,7 @@ def prompt_party_interactive() -> list[dict[str, Any]]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Initialize a customized Demiurge Core campaign vault (interactive or --non-interactive)."
+        description="Initialize a customized Prep Goblin campaign vault (interactive or --non-interactive)."
     )
     parser.add_argument("--name", help="Campaign name (e.g. 'Shadows of Oakhaven').")
     parser.add_argument(
@@ -1228,7 +1228,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--target-root",
         type=Path,
         default=None,
-        help="Target root directory (defaults to the Demiurge Core repo root; useful for isolated testing).",
+        help="Target root directory (defaults to the Prep Goblin repo root; useful for isolated testing).",
     )
     parser.add_argument(
         "--with-wildcards",
@@ -1288,7 +1288,7 @@ def main(argv: list[str] | None = None) -> int:
             party = normalize_party_entries(default_demo_party)
             custom_party = False
     else:
-        print("=== Demiurge Core — 60-Second Campaign Setup Wizard ===\n")
+        print("=== Prep Goblin — 60-Second Campaign Setup Wizard ===\n")
         campaign_name = prompt_text("Campaign name", args.name or "Shadows of Oakhaven")
         vault_dir_name = prompt_text("Vault directory name", args.vault_dir or "Vault")
         collection = prompt_text("Atlas VTT collection name", args.collection or "Campaign")

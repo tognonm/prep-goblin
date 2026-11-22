@@ -912,7 +912,7 @@ def main() -> int:
     if hasattr(sys.stderr, "reconfigure"):
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-    ap = argparse.ArgumentParser(description="Atlas VTT 0.16.0 Scene Tools (Demiurge Core)")
+    ap = argparse.ArgumentParser(description="Atlas VTT 0.16.0 Scene Tools (Prep Goblin)")
     ap.add_argument("--vault", help="Optional vault root directory override")
     sub = ap.add_subparsers(dest="cmd", required=True)
 

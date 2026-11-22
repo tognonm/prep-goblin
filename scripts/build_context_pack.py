@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Anti-Canon-Drift Session Context Compiler for Demiurge Core.
+"""Anti-Canon-Drift Session Context Compiler for Prep Goblin.
 
 Compiles a dense, structured, AI-ready Markdown snapshot from a live
 Obsidian + Atlas VTT 0.16.0 campaign vault to prevent canon drift across

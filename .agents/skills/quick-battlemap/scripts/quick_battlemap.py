@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Procedural battlemap & Atlas VTT 0.16.0 scene generator (Demiurge Core — Quick Battlemap).
+"""Procedural battlemap & Atlas VTT 0.16.0 scene generator (Prep Goblin — Quick Battlemap).
 
 Produces tactile WebP battlemaps with Pillow + Atlas VTT .atlasmap scenes
 (schema version 4) + map/scene JSON records + thumbnails + compact DM Dashboard

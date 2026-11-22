@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Register a square portrait/token image into an Atlas VTT 0.16.0 collection (Demiurge Core)."""
+"""Register a square portrait/token image into an Atlas VTT 0.16.0 collection (Prep Goblin)."""
 from __future__ import annotations
 
 import argparse

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Multi-agent adapter synchronizer for Demiurge Core.
+"""Multi-agent adapter synchronizer for Prep Goblin.
 
 Dynamically discovers all governance rules in `.agents/rules/*.md` and all skills
 in `.agents/skills/*/SKILL.md` (parsing YAML frontmatter `name` and `description`),
@@ -7,7 +7,7 @@ then generates thin, non-duplicating bridge files pointing to `AGENTS.md` and
 `.agents/` as the single source of truth:
 
 - `CLAUDE.md` (Claude Code)
-- `.cursor/rules/demiurge-core.mdc` (Cursor)
+- `.cursor/rules/prep-goblin.mdc` (Cursor)
 - `.github/copilot-instructions.md` (GitHub Copilot)
 
 Use `--check` in CI or pre-commit hooks to verify all adapter files are in sync.
@@ -177,9 +177,9 @@ def build_adapters(repo_root: Path) -> dict[Path, str]:
         [
             AUTO_HEADER,
             "",
-            "# CLAUDE.md — Demiurge Core (Claude Code Bridge)",
+            "# CLAUDE.md — Prep Goblin (Claude Code Bridge)",
             "",
-            "This file adapts **Demiurge Core** for Claude Code. Treat `AGENTS.md`, `campaign.config.json`, and `.agents/` as the canonical instructions for every task.",
+            "This file adapts **Prep Goblin** for Claude Code. Treat `AGENTS.md`, `campaign.config.json`, and `.agents/` as the canonical instructions for every task.",
             "",
             shared,
             "",
@@ -189,13 +189,13 @@ def build_adapters(repo_root: Path) -> dict[Path, str]:
     cursor_content = "\n".join(
         [
             "---",
-            'description: "Demiurge Core governance bridge pointing Cursor to AGENTS.md, campaign.config.json, and all .agents/ rules and skills."',
+            'description: "Prep Goblin governance bridge pointing Cursor to AGENTS.md, campaign.config.json, and all .agents/ rules and skills."',
             "alwaysApply: true",
             "---",
             "",
             AUTO_HEADER,
             "",
-            "# Demiurge Core — Cursor Governance Bridge",
+            "# Prep Goblin — Cursor Governance Bridge",
             "",
             "This always-applied Cursor rule delegates all campaign, Obsidian, and Atlas VTT `0.16.0` behavior to `AGENTS.md`, `campaign.config.json`, and `.agents/`.",
             "",
@@ -208,9 +208,9 @@ def build_adapters(repo_root: Path) -> dict[Path, str]:
         [
             AUTO_HEADER,
             "",
-            "# GitHub Copilot Instructions — Demiurge Core",
+            "# GitHub Copilot Instructions — Prep Goblin",
             "",
-            "This file configures GitHub Copilot for **Demiurge Core**. Treat `AGENTS.md`, `campaign.config.json`, and `.agents/` as the single source of truth for all rules, skills, and vault workflows.",
+            "This file configures GitHub Copilot for **Prep Goblin**. Treat `AGENTS.md`, `campaign.config.json`, and `.agents/` as the single source of truth for all rules, skills, and vault workflows.",
             "",
             shared,
             "",
@@ -219,7 +219,7 @@ def build_adapters(repo_root: Path) -> dict[Path, str]:
 
     return {
         repo_root / "CLAUDE.md": claude_content,
-        repo_root / ".cursor" / "rules" / "demiurge-core.mdc": cursor_content,
+        repo_root / ".cursor" / "rules" / "prep-goblin.mdc": cursor_content,
         repo_root / ".github" / "copilot-instructions.md": copilot_content,
     }
 
@@ -292,7 +292,7 @@ def main(argv: list[str] | None = None) -> int:
         "--root",
         type=Path,
         default=default_root,
-        help="Repository root directory (defaults to the Demiurge Core repo root).",
+        help="Repository root directory (defaults to the Prep Goblin repo root).",
     )
     args = parser.parse_args(argv)
     return sync_adapters(args.root.resolve(), check_only=args.check)

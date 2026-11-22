@@ -1,4 +1,4 @@
-"""Shared pytest helpers and paths for the Demiurge Core CLI test suite."""
+"""Shared pytest helpers and paths for the Prep Goblin CLI test suite."""
 from __future__ import annotations
 
 import os
@@ -56,7 +56,7 @@ def run_cli(
     *args: str | Path,
     cwd: Path | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    """Run a Demiurge Core Python CLI script with deterministic UTF-8 I/O."""
+    """Run a Prep Goblin Python CLI script with deterministic UTF-8 I/O."""
     env = os.environ.copy()
     env["PYTHONIOENCODING"] = "utf-8"
     env["PYTHONUTF8"] = "1"

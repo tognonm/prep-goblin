@@ -1,6 +1,6 @@
-# Contributing to Demiurge Core
+# Contributing to Prep Goblin
 
-Thank you for your interest in improving **Demiurge Core**, an open-source, local-first agentic Dungeon Master framework for **Obsidian** and **Atlas VTT `0.16.0`**.
+Thank you for your interest in improving **Prep Goblin**, an open-source, local-first agentic Dungeon Master framework for **Obsidian** and **Atlas VTT `0.16.0`**.
 
 We welcome contributions ranging from new procedural battlemap presets and modular DM skills to vault linting checks, documentation improvements, and bug fixes.
 
@@ -23,8 +23,8 @@ Before opening a pull request, verify that your changes uphold these safeguards:
 Requires **Python 3.10+**.
 
 ```bash
-git clone https://github.com/tognonm/demiurge-core.git
-cd demiurge-core
+git clone https://github.com/tognonm/prep-goblin.git
+cd prep-goblin
 python -m pip install -r requirements.txt
 python -m pip install pytest
 ```
@@ -80,7 +80,7 @@ When testing `scripts/init_campaign.py`, always pass `--target-root <temp_dir>` 
 3. **Rule Format (`.agents/rules/<rule-name>.md`):**
    - Start with a clear `# H1` title describing the rule's scope.
 4. **Regenerate Multi-Agent Adapters (Mandatory):**
-   Whenever you add, rename, or update files in `.agents/rules/` or `.agents/skills/`, regenerate the adapter bridge files (`CLAUDE.md`, `.cursor/rules/demiurge-core.mdc`, `.github/copilot-instructions.md`) instead of editing them by hand:
+   Whenever you add, rename, or update files in `.agents/rules/` or `.agents/skills/`, regenerate the adapter bridge files (`CLAUDE.md`, `.cursor/rules/prep-goblin.mdc`, `.github/copilot-instructions.md`) instead of editing them by hand:
    ```bash
    python scripts/sync_agent_adapters.py
    python scripts/sync_agent_adapters.py --check

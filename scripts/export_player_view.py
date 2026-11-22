@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Spoiler Firewall & Player Portal Exporter for Demiurge Core.
+"""Spoiler Firewall & Player Portal Exporter for Prep Goblin.
 
 Exports a clean, player-safe subset of an Obsidian + Atlas VTT 0.16.0 vault
 for Quartz static sites, shared player vaults, or single-file Discord/PDF
@@ -942,7 +942,7 @@ def render_single_md(
     lines: list[str] = [
         f"# Player Portal — {campaign_name}",
         "",
-        "> Spoiler-filtered player compilation exported by **Demiurge Core**.",
+        "> Spoiler-filtered player compilation exported by **Prep Goblin**.",
         "",
         "## Table of Contents",
         "",
