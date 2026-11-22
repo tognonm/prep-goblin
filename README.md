@@ -18,9 +18,9 @@
 
 > Prep Goblin is a community extension. It is not made, endorsed or supported by Atlas VTT or Atlas Online. For help or bug reports, please open an issue on **[GitHub Issues](https://github.com/tognonm/prep-goblin/issues)**.
 
-**Prep Goblin** is an open-source, local-first **agentic Dungeon Master framework** for running D&D 5e campaigns with **[Obsidian](https://obsidian.md/)** and **[Atlas VTT 0.16.0](https://github.com/atlas-vtt/atlas-vtt)**.
+**Prep Goblin** is an open-source, local-first **agentic Dungeon Master framework** for running D&D 5e campaigns with **[Obsidian](https://obsidian.md/)** and **[Atlas VTT 0.16.0+ / 0.19.0+](https://github.com/atlas-vtt/atlas-vtt)**.
 
-It pairs strict narrative governance (**DM-as-Reviewer** — the AI never invents canon behind your back) with **10 modular agent skills**, **cross-IDE agent adapters**, **native Obsidian Bases**, a clean two-level vault architecture, and **12 tested Python CLI toolkits** covering 60-second campaign bootstrapping, instant procedural battlemaps, Armarium-ready Wildcard packs, Atlas VTT scene auditing, encounter math, player spoiler firewalls, anti-canon-drift context packs, and audio/Discord transcript preprocessing.
+It pairs strict narrative governance (**DM-as-Reviewer** — the AI never invents canon behind your back) with **11 modular agent skills**, **cross-IDE agent adapters**, **native Obsidian Bases**, a clean two-level vault architecture, and **13 tested Python CLI toolkits** covering 60-second campaign bootstrapping, instant procedural battlemaps, Armarium-ready Wildcard packs, Atlas VTT scene auditing, `0.19.0+` Music & Ambience sound moods, encounter math, player spoiler firewalls, anti-canon-drift context packs, and audio/Discord transcript preprocessing.
 
 ---
 
@@ -37,9 +37,9 @@ From a single 2-second CLI command (`quick_battlemap.py`) to a validated **Atlas
 - **60-Second Campaign Setup Wizard (`scripts/init_campaign.py`):** Bootstraps your custom campaign vault from `template-vault/`, generates a fresh campaign UUID v4 and Atlas collection, creates custom PC notes plus `400×400` heraldic monogram WebP tokens, converts grid units (`feet` or `meters`), updates `campaign.config.json` and `AGENTS.md`, and optionally pre-renders 8 Wildcard battlemaps.
 - **DM-as-Reviewer Governance (`AGENTS.md` + 7 Rules):** Clear boundaries separating technical automation (XP budgets, YAML, `.atlasmap` assembly, validation) from narrative canon (NPCs, lore, temples, handouts, secrets).
 - **Multi-Agent IDE Support (`scripts/sync_agent_adapters.py`):** Works out of the box with **Antigravity**, **Codex**, **Claude Code** (`CLAUDE.md`), **Cursor** (`.cursor/rules/prep-goblin.mdc`), and **GitHub Copilot** (`.github/copilot-instructions.md`). All adapter bridges are auto-generated from `AGENTS.md` and `.agents/` as the single source of truth and drift-checked in CI.
-- **Zero-Overlap Skill Architecture (10 Modular Skills):** Distinct scopes for session prep, live improvisation, instant tactical battlemaps, canonical dungeon building, encounter balancing, statblocks, token art registration, audio/Discord transcript preprocessing, post-session recaps, and living-world faction clocks.
+- **Zero-Overlap Skill Architecture (11 Modular Skills):** Distinct scopes for session prep, live improvisation, instant tactical battlemaps, canonical dungeon building, Atlas VTT `0.19.0+` Music & Ambience sound moods, encounter balancing, statblocks, token art registration, audio/Discord transcript preprocessing, post-session recaps, and living-world faction clocks.
 - **Two-Level Vault Model (`< 32 KB` Atlas Safe) + Native Obsidian Bases:** Separates rich Lore/Location notes from ultra-lean Atlas VTT Linked Note Dashboards (`< 30 KB`, respecting Atlas VTT's hard 32 KB ceiling) with 1:1 `### H3` Note Pin anchors, **pre-calculated party passive checks** (`⚡ Automatic Passive` vs. `🎲 Active Roll`), and native Obsidian Bases (`Items/Loot.base` wired into Atlas `lootBases` and `Campaign/Campaign Board.base`).
-- **12 Tested Python CLI Toolkits:** Covering campaign setup, full Atlas vault linting, player spoiler firewall exports (Quartz / Discord / single Markdown), anti-canon-drift AI context packs, 5e encounter math (`2024` & `2014`), transcript cleaning/chunking, 8 procedural battlemap presets, party-agnostic Armarium Wildcard collection packs, Atlas wall/light auditing & dashboard scaffolding, live Markdown table rolling, and token registration.
+- **13 Tested Python CLI Toolkits:** Covering campaign setup, full Atlas vault linting, player spoiler firewall exports (Quartz / Discord / single Markdown), anti-canon-drift AI context packs, 5e encounter math (`2024` & `2014`), transcript cleaning/chunking, 8 procedural battlemap presets, party-agnostic Armarium Wildcard collection packs, Atlas wall/light auditing & dashboard scaffolding, Atlas `0.19.0+` sound mood mixing & scene linking, live Markdown table rolling, and token registration.
 - **Ready-to-Open `template-vault/`:** 100% fictional, spoiler-free, copyright-safe starter vault complete with a DM Screen, Obsidian Bases, World State & Improv Staging Log, multi-compatible demo random table, fictional example party (`Mira`, `Kael`, `Bram`), and a pre-validated Atlas VTT demo scene (`Demo - Oakhaven Alley`).
 
 ---
@@ -52,18 +52,18 @@ flowchart LR
 
     subgraph Rules["Single Source of Truth & Bridges"]
         CFG["AGENTS.md & campaign.config.json"]
-        RUL["7 Rules + 10 Modular Skills (.agents/)"]
+        RUL["7 Rules + 11 Modular Skills (.agents/)"]
         ADP["Synced Bridges (CLAUDE.md, .cursor/rules, copilot-instructions)"]
     end
 
     AG -.->|"Follows"| Rules
 
-    subgraph Toolkits["11 Python CLI Toolkits"]
-        T1["init_campaign.py & sync_agent_adapters.py"]
+    subgraph Toolkits["13 Python CLI Toolkits"]
+        T1["init_campaign.py, build_wildcard_pack.py & sync_agent_adapters.py"]
         T2["lint_vault.py (--full-atlas) & export_player_view.py"]
         T3["build_context_pack.py, build_encounter.py, prep_transcript.py"]
         T4["quick_battlemap.py (8 presets) & atlas_scene_tools.py"]
-        T5["roll_tables.py & register_token.py"]
+        T5["atlas_sound_tools.py (0.19.0+), roll_tables.py & register_token.py"]
     end
 
     AG -->|"Executes"| Toolkits
@@ -99,7 +99,7 @@ flowchart LR
 
 ## Power-User CLI Toolkit
 
-All **12 Python CLI tools** use only Python 3.10+ stdlib plus `Pillow`, `numpy`, and `PyYAML`, run identically on Windows, macOS, and Linux, and are verified by automated `pytest` tests in CI.
+All **13 Python CLI tools** use only Python 3.10+ stdlib plus `Pillow`, `numpy`, and `PyYAML`, run identically on Windows, macOS, and Linux, and are verified by automated `pytest` tests in CI.
 
 | CLI Tool | Purpose | Key Command Example |
 | :--- | :--- | :--- |
@@ -113,6 +113,7 @@ All **12 Python CLI tools** use only Python 3.10+ stdlib plus `Pillow`, `numpy`,
 | **`scripts/prep_transcript.py`** | **Transcript Preprocessor:** Cleans raw `.srt`, `.vtt`, and `.txt` audio/Discord transcripts (strips timestamps, fillers, noise, rolling dupes, merges consecutive speakers) into overlapping chunks prefixed with a Vault Proper-Noun Glossary. | `python scripts/prep_transcript.py session.srt --out-dir chunks/` |
 | **`.agents/skills/quick-battlemap/scripts/quick_battlemap.py`** | **Instant Procedural Battlemaps (8 Presets):** Renders tactical WebP maps + `.atlasmap` v4 scenes + `< 5 KB` DM Dashboards in 2–3s (`whiteboard`, `alley`, `road`, `hills`, `interior`, `camp`, `bridge`, `crypt`) with walls, doors, secret doors, lights, and snapped tokens. | `python .agents/skills/quick-battlemap/scripts/quick_battlemap.py --preset crypt --lighting night --enemies "Road Raider:2,Skeleton Sentry:1" --dry-run` |
 | **`.agents/skills/dungeons-and-maps/scripts/atlas_scene_tools.py`** | **Atlas Scene Tools:** Subcommands `grid-preview`, `detect-lights`, `verify-scene`, `validate`, `audit-walls --strict` (detects zero-length, duplicate, near-miss wall gaps & tight lights), and `scaffold-dashboard` (`< 5 KB` 1:1 pin starter dashboard). | `python .agents/skills/dungeons-and-maps/scripts/atlas_scene_tools.py audit-walls "template-vault/atlas-vtt/collections/Campaign/scenes/Demo - Oakhaven Alley.atlasmap" --strict` |
+| **`.agents/skills/atlas-sound-moods/scripts/atlas_sound_tools.py`** | **Atlas Sound & Moods (`0.19.0+`):** Inventories local music/ambience libraries, builds idempotent `sounds/records/*.json` and `sounds/moods/*.json` mixes, binds `state.sound` (`mood` + `combatMood`) to `.atlasmap` scenes, and validates audio paths. | `python .agents/skills/atlas-sound-moods/scripts/atlas_sound_tools.py validate` |
 | **`.agents/skills/live-improv/scripts/roll_tables.py`** | **Live Table Roller:** Dynamically indexes and rolls any Markdown `| dN | ... |` table in `<Vault>/Tables/` with seeded reproducibility and configurable presets. | `python .agents/skills/live-improv/scripts/roll_tables.py --preset demo-scene --seed 42` |
 | **`.agents/skills/atlas-token-art/scripts/register_token.py`** | **Atlas Token Registrar:** Center-crops portraits into `400×400` WebP tokens + `128×128` thumbnails and writes canonical `tokens/token-*.json` records for Atlas VTT `0.16.0`. | `python .agents/skills/atlas-token-art/scripts/register_token.py portrait.png --name "Iron Warden" --statblock "Monsters/Road Raider.md" --dry-run` |
 
@@ -199,17 +200,18 @@ python scripts/init_campaign.py \
    - Press **`Tab`** to toggle the Linked DM Dashboard.
    - Hold **`H`** (*Lighting Peek*) to preview Dynamic Lighting through the party's eyes.
    - Click either warehouse door on the map to open it live.
-4. Open the repository root in your AI coding agent (**Antigravity**, **Claude Code**, **Cursor**, **GitHub Copilot**, or **Codex**). Governance and all 10 skills are loaded automatically via `AGENTS.md` and the synced adapter bridges.
+4. Open the repository root in your AI coding agent (**Antigravity**, **Claude Code**, **Cursor**, **GitHub Copilot**, or **Codex**). Governance and all 11 skills are loaded automatically via `AGENTS.md` and the synced adapter bridges.
 
 ---
 
-## Modular Skills & Example Chat Prompts (10 Skills)
+## Modular Skills & Example Chat Prompts (11 Skills)
 
 | Skill | Tabletop Moment | Example Prompt in Chat |
 | :--- | :--- | :--- |
 | **`session-prep`** | Modular session prep | *"Compile a context pack and prep Session 4: the party investigates the missing merchant wagon in Oakhaven."* |
 | **`dungeons-and-maps`** | Canonical dungeon build | *"Check grid alignment on this tower crypt PNG, audit the walls, scaffold a `< 5 KB` dashboard, and propose room labels A–E."* |
 | **`quick-battlemap`** | Sudden ambush live (2–3s) | *"Instant crypt battlemap at night with 2 Road Raiders and 1 Skeleton Sentry."* |
+| **`atlas-sound-moods`** | Music & Ambience (`0.19.0+`) | *"Build tavern, crypt, and skirmish sound moods from my local audio library and bind them to our Atlas scenes."* |
 | **`live-improv`** | Live table improvisation | *"Roll a quick NPC and street complication right now."* |
 | **`encounters-and-loot`** | Encounter balance & treasure | *"Build a 2024 Moderate encounter for three Level 3 PCs, write its Atlas Encounter JSON, and roll hoard loot."* |
 | **`statblock-5e`** | Custom monster / NPC stats | *"Create a CR 1/2 skeleton guard statblock in Fantasy Statblocks YAML under 32 KB."* |
@@ -258,13 +260,14 @@ python scripts/sync_agent_adapters.py --check
 │   └── social-preview.jpg           # GitHub social preview (1280x640)
 ├── scripts/
 │   ├── init_campaign.py             # 60-second campaign setup wizard (interactive & --non-interactive)
+│   ├── build_wildcard_pack.py       # Party-agnostic Armarium-ready 8-scene Wildcard pack builder
 │   ├── lint_vault.py                # YAML, wikilink, 32 KB limit & --full-atlas auditor
 │   ├── sync_agent_adapters.py       # Multi-agent bridge generator & drift checker (--check)
 │   ├── export_player_view.py        # Spoiler Firewall & Player Portal exporter (vault / single-md + --verify)
 │   ├── build_context_pack.py        # Anti-canon-drift byte-budgeted AI session context compiler
 │   ├── build_encounter.py           # 5e (2024 / 2014) XP budget calculator & Atlas Encounter JSON builder
 │   └── prep_transcript.py           # Audio/Discord (.srt/.vtt/.txt) cleaner, glossary extractor & chunker
-├── tests/                           # Automated pytest suite covering all 11 CLI tools & repo hygiene
+├── tests/                           # Automated pytest suite covering all 13 CLI tools & repo hygiene
 ├── .agents/
 │   ├── rules/                       # 7 modular governance rules
 │   │   ├── art-style.md
@@ -274,7 +277,8 @@ python scripts/sync_agent_adapters.py --check
 │   │   ├── scene-and-dashboard-standards.md
 │   │   ├── session-lifecycle.md
 │   │   └── vtt-sync-boundaries.md
-│   └── skills/                      # 10 specialized DM skills + Python toolkits
+│   └── skills/                      # 11 specialized DM skills + Python toolkits
+│       ├── atlas-sound-moods/       # + scripts/atlas_sound_tools.py + resources/moods_template.json (Atlas 0.19.0+)
 │       ├── atlas-token-art/         # + scripts/register_token.py + resources/prompt_template.md
 │       ├── dungeons-and-maps/       # + scripts/atlas_scene_tools.py + resources/dashboard_template.md
 │       ├── encounters-and-loot/
@@ -318,7 +322,7 @@ python -m pytest -v
 ## Copyright & Privacy Safeguards
 
 - This repository contains **zero copyrighted rulebook text** and **zero real campaign spoilers**, enforced automatically in CI by `tests/test_repo_hygiene.py`.
-- `.gitignore` explicitly excludes `Sources/`, `Manuals/`, `Reference/`, and `Archive/` so private PDFs or personal rulebooks kept locally are never committed.
+- `.gitignore` explicitly excludes `Sources/`, `Manuals/`, `Reference/`, and `Archive/` so private PDFs or personal rulebooks kept locally are never committed, as well as `**/atlas-vtt/sounds/music/` and `**/atlas-vtt/sounds/ambience/` so heavy or licensed audio files stay local while lightweight `records/` and `moods/` JSON metadata remain tracked.
 - Minimal monster examples in `template-vault/Monsters/` follow standard D&D 5e open mechanics compatible with the **SRD 5.1 (CC-BY-4.0)** format.
 
 ---

@@ -1,0 +1,165 @@
+{
+  "collection": "Campaign",
+  "moods": [
+    {
+      "id": "mood-tavern",
+      "name": "Cozy Tavern",
+      "order": 0,
+      "fadeSeconds": 4,
+      "icon": "beer-stein",
+      "tone": "amber",
+      "room": "room",
+      "music": {
+        "tracks": [
+          "Tavern Hearth"
+        ],
+        "shuffle": true,
+        "levelDb": -2
+      },
+      "layers": [
+        {
+          "sound": "Campfire",
+          "levelDb": -10
+        }
+      ]
+    },
+    {
+      "id": "mood-alley-shadows",
+      "name": "Urban Alley & Shadows",
+      "order": 1,
+      "fadeSeconds": 4,
+      "icon": "hood",
+      "tone": "purpure",
+      "room": "room",
+      "music": {
+        "tracks": [
+          "Night Watch"
+        ],
+        "shuffle": true,
+        "levelDb": -2
+      },
+      "layers": [
+        {
+          "sound": "Night Wind",
+          "levelDb": -14
+        }
+      ]
+    },
+    {
+      "id": "mood-travel-road",
+      "name": "Country Road & Travel",
+      "order": 2,
+      "fadeSeconds": 4,
+      "icon": "horse-head",
+      "tone": "earth",
+      "room": "room",
+      "music": {
+        "tracks": [
+          "Open Road"
+        ],
+        "shuffle": true,
+        "levelDb": -2
+      },
+      "layers": [
+        {
+          "sound": "Quiet Forest",
+          "levelDb": -8
+        }
+      ]
+    },
+    {
+      "id": "mood-crypt-dungeon",
+      "name": "Stone Crypt & Depths",
+      "order": 3,
+      "fadeSeconds": 5,
+      "icon": "dungeon",
+      "tone": "indigo",
+      "room": "cave",
+      "music": {
+        "tracks": [
+          "Subterranean Echoes"
+        ],
+        "shuffle": true,
+        "levelDb": -1,
+        "reverb": 0.35
+      },
+      "layers": [
+        {
+          "sound": "Cave",
+          "levelDb": -6,
+          "reverb": 0.2
+        }
+      ]
+    },
+    {
+      "id": "mood-combat-skirmish",
+      "name": "Combat — Skirmish",
+      "order": 4,
+      "fadeSeconds": 2,
+      "icon": "combat",
+      "tone": "gules",
+      "room": "hall",
+      "music": {
+        "tracks": [
+          "Steel and Drums"
+        ],
+        "shuffle": true,
+        "levelDb": 0
+      },
+      "layers": []
+    },
+    {
+      "id": "mood-campfire-rest",
+      "name": "Campfire Rest",
+      "order": 5,
+      "fadeSeconds": 5,
+      "icon": "campfire",
+      "tone": "tenne",
+      "room": "room",
+      "music": {
+        "tracks": [
+          "Fireside Respite"
+        ],
+        "shuffle": true,
+        "levelDb": -2
+      },
+      "layers": [
+        {
+          "sound": "Campfire",
+          "levelDb": -5
+        },
+        {
+          "sound": "Quiet Forest",
+          "levelDb": -12
+        }
+      ]
+    }
+  ],
+  "sceneLinks": [
+    {
+      "scene": "Demo - Oakhaven Alley.atlasmap",
+      "mood": "mood-alley-shadows",
+      "combatMood": "mood-combat-skirmish"
+    },
+    {
+      "scene": "Wildcard - Urban Alley.atlasmap",
+      "mood": "mood-alley-shadows",
+      "combatMood": "mood-combat-skirmish"
+    },
+    {
+      "scene": "Wildcard - Country Road.atlasmap",
+      "mood": "mood-travel-road",
+      "combatMood": "mood-combat-skirmish"
+    },
+    {
+      "scene": "Wildcard - Stone Crypt.atlasmap",
+      "mood": "mood-crypt-dungeon",
+      "combatMood": "mood-combat-skirmish"
+    },
+    {
+      "scene": "Wildcard - Forest Camp.atlasmap",
+      "mood": "mood-campfire-rest",
+      "combatMood": "mood-combat-skirmish"
+    }
+  ]
+}

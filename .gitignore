@@ -32,3 +32,8 @@ Sources/
 Manuals/
 Reference/
 Archive/
+
+# Heavy Local Audio Binaries (Atlas VTT 0.19.0+ Music & Ambience)
+# Keep sounds/records/*.json and sounds/moods/*.json tracked in Git.
+**/atlas-vtt/sounds/music/
+**/atlas-vtt/sounds/ambience/

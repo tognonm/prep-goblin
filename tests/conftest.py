@@ -32,6 +32,12 @@ SCRIPT_ROLL_TABLES = (
 SCRIPT_REGISTER_TOKEN = (
     REPO_ROOT / ".agents" / "skills" / "atlas-token-art" / "scripts" / "register_token.py"
 )
+SCRIPT_ATLAS_SOUND_TOOLS = (
+    REPO_ROOT / ".agents" / "skills" / "atlas-sound-moods" / "scripts" / "atlas_sound_tools.py"
+)
+MOODS_TEMPLATE = (
+    REPO_ROOT / ".agents" / "skills" / "atlas-sound-moods" / "resources" / "moods_template.json"
+)
 
 DEMO_SCENE = (
     TEMPLATE_VAULT

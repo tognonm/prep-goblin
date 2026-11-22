@@ -42,6 +42,7 @@ Do **not** duplicate vault rules or skill procedures here. Always read these can
 
 | Skill | Purpose | Definition |
 | :--- | :--- | :--- |
+| `atlas-sound-moods` | Creates, validates, and manages Moods (music playlists + ambient sound layers + spatial reverb) and automatic scene/combat mood links for Atlas VTT 0.19.0+ Music & Ambience. Use when the DM wants to configure soundtracks for dungeons, taverns, roads, or combat encounters, or audit audio records and .atlasmap sound bindings. | `.agents/skills/atlas-sound-moods/SKILL.md` |
 | `atlas-token-art` | Generates cohesive dark-fantasy portraits for monsters and NPCs by inferring weapons, armor, and visual traits from statblocks or lore, links the portrait in Obsidian, and registers the token cleanly for Atlas VTT 0.16.0. | `.agents/skills/atlas-token-art/SKILL.md` |
 | `dungeons-and-maps` | Designs, builds, and validates end-to-end tactical dungeons, battlemaps, walls, doors, dynamic lights, tokens, and room dashboards for D&D 5e with Obsidian and Atlas VTT 0.16.0. Enforces the two-level vault model (Location Note + DM Dashboard < 30 KB), 1:1 Note Pin H3 anchors, pre-calculated party passives, and automated .atlasmap validation. | `.agents/skills/dungeons-and-maps/SKILL.md` |
 | `encounters-and-loot` | Balances D&D 5e combat encounters using XP budgets for party level, generates tier-appropriate individual and hoard treasure, and configures Encounter JSONs, Random Tables, and native Quests for Atlas VTT 0.16.0. | `.agents/skills/encounters-and-loot/SKILL.md` |

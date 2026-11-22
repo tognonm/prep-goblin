@@ -11,6 +11,8 @@ from PIL import Image
 from conftest import (
     DEMO_DASHBOARD,
     DEMO_SCENE,
+    MOODS_TEMPLATE,
+    SCRIPT_ATLAS_SOUND_TOOLS,
     SCRIPT_ATLAS_TOOLS,
     SCRIPT_QUICK_BATTLEMAP,
     SCRIPT_REGISTER_TOKEN,
@@ -622,4 +624,266 @@ def test_build_wildcard_pack_generates_8_validated_party_agnostic_scenes_and_zip
         names = zf.namelist()
         assert any(n.endswith("collection.json") for n in names)
         assert sum(1 for n in names if n.endswith(".atlasmap")) == 8
+
+
+# ---------------------------------------------------------------------------
+# .agents/skills/atlas-sound-moods/scripts/atlas_sound_tools.py
+# ---------------------------------------------------------------------------
+
+
+def test_atlas_sound_moods_template_is_valid_json_schema() -> None:
+    cfg = json.loads(MOODS_TEMPLATE.read_text(encoding="utf-8"))
+    assert cfg.get("collection") == "Campaign"
+    moods = cfg.get("moods")
+    assert isinstance(moods, list) and len(moods) >= 6
+    valid_rooms = {"room", "hall", "cave", "cathedral"}
+    for m in moods:
+        assert m["id"].startswith("mood-")
+        assert isinstance(m["name"], str) and m["name"]
+        assert m["room"] in valid_rooms
+        assert isinstance(m.get("tone"), str) and m["tone"]
+        assert isinstance(m.get("music"), dict)
+        assert isinstance(m.get("layers"), list)
+    scene_links = cfg.get("sceneLinks")
+    assert isinstance(scene_links, list) and len(scene_links) >= 1
+    for link in scene_links:
+        assert isinstance(link.get("scene"), str) and link["scene"].endswith(".atlasmap")
+        assert isinstance(link.get("mood"), str) and link["mood"].startswith("mood-")
+
+
+def test_atlas_sound_tools_inventory_build_link_and_validate_end_to_end(tmp_path: Path) -> None:
+    vault = tmp_path / "sound_vault"
+    sounds_dir = vault / "atlas-vtt" / "sounds"
+    music_vocal = sounds_dir / "music" / "Tavern" / "Hearth Song.opus"
+    music_inst = sounds_dir / "music" / "Tavern" / "Instrumental" / "Hearth Song.opus"
+    music_combat = sounds_dir / "music" / "Combat" / "Skirmish.opus"
+    amb_tavern = sounds_dir / "ambience" / "Tavern Chatter.opus"
+    for p in (music_vocal, music_inst, music_combat, amb_tavern):
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_bytes(b"OggS-dummy-audio-bytes")
+
+    scenes_dir = vault / "atlas-vtt" / "collections" / "Campaign" / "scenes"
+    scenes_dir.mkdir(parents=True, exist_ok=True)
+    scene_file = scenes_dir / "Demo - Oakhaven Alley.atlasmap"
+    scene_file.write_text(DEMO_SCENE.read_text(encoding="utf-8"), encoding="utf-8")
+
+    # 1. inventory
+    inv = run_cli(
+        SCRIPT_ATLAS_SOUND_TOOLS,
+        "--vault",
+        vault,
+        "inventory",
+        "--list-ambience",
+    )
+    assert inv.returncode == 0, inv.stdout + inv.stderr
+    assert "3 music file(s), 1 ambience file(s)" in inv.stdout
+    assert "Tavern Chatter" in inv.stdout
+
+    # 2. build-moods (prefers Instrumental on duplicate stem)
+    cfg_path = tmp_path / "test_moods.json"
+    cfg_payload = {
+        "collection": "Campaign",
+        "moods": [
+            {
+                "id": "mood-tavern",
+                "name": "Tavern Hearth",
+                "order": 0,
+                "fadeSeconds": 3.0,
+                "icon": "beer-stein",
+                "tone": "amber",
+                "room": "room",
+                "music": {
+                    "tracks": ["Hearth Song"],
+                    "levelDb": -4,
+                    "shuffle": True,
+                    "reverb": 0.1,
+                },
+                "layers": [
+                    {
+                        "sound": "Tavern Chatter",
+                        "levelDb": -8,
+                        "reverb": 0.1,
+                    }
+                ],
+            },
+            {
+                "id": "mood-skirmish",
+                "name": "Alley Skirmish",
+                "order": 1,
+                "fadeSeconds": 1.5,
+                "icon": "combat",
+                "tone": "gules",
+                "room": "hall",
+                "music": {
+                    "tracks": ["Skirmish"],
+                    "levelDb": -2,
+                    "shuffle": True,
+                    "reverb": 0.15,
+                },
+                "layers": [],
+            },
+        ],
+        "sceneLinks": [
+            {
+                "scene": "Demo - Oakhaven Alley.atlasmap",
+                "mood": "mood-tavern",
+                "combatMood": "mood-skirmish",
+            }
+        ],
+    }
+    cfg_path.write_text(json.dumps(cfg_payload, indent=2), encoding="utf-8")
+
+    build1 = run_cli(
+        SCRIPT_ATLAS_SOUND_TOOLS,
+        "--vault",
+        vault,
+        "build-moods",
+        cfg_path,
+    )
+    assert build1.returncode == 0, build1.stdout + build1.stderr
+
+    records_dir = sounds_dir / "records"
+    moods_dir = sounds_dir / "moods"
+    rec_files = sorted(records_dir.glob("sound-*.json"))
+    assert len(rec_files) == 3
+
+    # Verify Instrumental track was preferred and all audioPaths use POSIX '/'
+    hearth_rec = None
+    for rf in rec_files:
+        raw = rf.read_text(encoding="utf-8")
+        assert "\\\\" not in raw
+        data = json.loads(raw)
+        assert "\\" not in data["audioPath"]
+        if data["name"] == "Hearth Song":
+            hearth_rec = data
+    assert hearth_rec is not None
+    assert "/Instrumental/" in hearth_rec["audioPath"]
+
+    # 3. Re-running build-moods must be idempotent (reuses existing records)
+    build2 = run_cli(
+        SCRIPT_ATLAS_SOUND_TOOLS,
+        "--vault",
+        vault,
+        "build-moods",
+        cfg_path,
+    )
+    assert build2.returncode == 0, build2.stdout + build2.stderr
+    assert len(list(records_dir.glob("sound-*.json"))) == 3
+    assert len(list(moods_dir.glob("mood-*.json"))) == 2
+
+    # 4. link-scene
+    link_one = run_cli(
+        SCRIPT_ATLAS_SOUND_TOOLS,
+        "--vault",
+        vault,
+        "link-scene",
+        scene_file,
+        "--mood",
+        "mood-tavern",
+        "--combat-mood",
+        "mood-skirmish",
+    )
+    assert link_one.returncode == 0, link_one.stdout + link_one.stderr
+    linked_data = json.loads(scene_file.read_text(encoding="utf-8"))
+    assert linked_data["state"]["sound"] == {
+        "mood": "mood-tavern",
+        "combatMood": "mood-skirmish",
+    }
+
+    # 5. link-all
+    link_all = run_cli(
+        SCRIPT_ATLAS_SOUND_TOOLS,
+        "--vault",
+        vault,
+        "link-all",
+        cfg_path,
+    )
+    assert link_all.returncode == 0, link_all.stdout + link_all.stderr
+
+    # 6. validate (must pass cleanly)
+    val = run_cli(
+        SCRIPT_ATLAS_SOUND_TOOLS,
+        "--vault",
+        vault,
+        "validate",
+    )
+    assert val.returncode == 0, val.stdout + val.stderr
+    assert "0 errors" in val.stdout.lower() or "passed" in val.stdout.lower()
+
+
+def test_atlas_sound_tools_validate_catches_missing_audio_backslashes_and_broken_links(
+    tmp_path: Path,
+) -> None:
+    vault = tmp_path / "broken_sound_vault"
+    records_dir = vault / "atlas-vtt" / "sounds" / "records"
+    moods_dir = vault / "atlas-vtt" / "sounds" / "moods"
+    scenes_dir = vault / "atlas-vtt" / "collections" / "Campaign" / "scenes"
+    records_dir.mkdir(parents=True)
+    moods_dir.mkdir(parents=True)
+    scenes_dir.mkdir(parents=True)
+
+    # Record with missing audio AND Windows backslash
+    (records_dir / "sound-broken-1234567890.json").write_text(
+        json.dumps(
+            {
+                "format": 1,
+                "id": "sound-broken-1234567890",
+                "name": "Broken Track",
+                "tags": [],
+                "createdAt": 1700000000000,
+                "modifiedAt": 1700000000000,
+                "audioPath": r"atlas-vtt\sounds\music\missing.opus",
+                "audioSize": 100,
+                "kind": "music",
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    # Mood referencing a nonexistent track ID + invalid tone
+    (moods_dir / "mood-broken.json").write_text(
+        json.dumps(
+            {
+                "format": 1,
+                "id": "mood-broken",
+                "name": "Broken Mood",
+                "order": 0,
+                "fadeSeconds": 2.0,
+                "icon": "music",
+                "tone": "neutral",
+                "room": "room",
+                "music": {"tracks": ["sound-does-not-exist"], "levelDb": -4},
+                "layers": [],
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    # Scene referencing a nonexistent mood ID
+    (scenes_dir / "Broken Scene.atlasmap").write_text(
+        json.dumps(
+            {
+                "version": 4,
+                "state": {
+                    "schema": "atlas-vtt",
+                    "version": 4,
+                    "sound": {"mood": "mood-ghost", "combatMood": "mood-phantom"},
+                    "objects": {},
+                },
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    res = run_cli(SCRIPT_ATLAS_SOUND_TOOLS, "--vault", vault, "validate")
+    assert res.returncode == 1
+    assert "Windows backslashes" in res.stdout
+    assert "points to missing file" in res.stdout
+    assert "invalid tone 'neutral'" in res.stdout
+    assert "missing music track record 'sound-does-not-exist'" in res.stdout
+    assert "mood='mood-ghost' does not exist" in res.stdout
+    assert "combatMood='mood-phantom' does not exist" in res.stdout
 

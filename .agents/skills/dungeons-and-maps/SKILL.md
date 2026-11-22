@@ -31,6 +31,7 @@ This skill governs the complete preparation pipeline for canonical dungeons in *
 - **Standard / SRD Statblocks (`AGENTS.md` Rule 7):** Standard creatures keep exact official stats with no arbitrary modifications.
 - **Scene Name Consistency:** `atlas_scene:` in the Location Note must match `atlasRecord.name` in `scenes/scene-*.json`.
 - **1:1 Indexable H3 Headings:** Every pinned room or POI must have an exact `### N. Room Name` heading (no `*italic*` or `**bold**` inside the heading) matching the `#Heading` anchor of its Note Pin.
+- **Multi-Level Synchronization (Zero Canon Drift):** Whenever any room detail, DC, secret, treasure, or mechanic of a dungeon is modified, ALWAYS propagate the change in lockstep across all three layers: **(1)** the Compendium Location Note (`<Vault>/Locations/`), **(2)** the operational DM Dashboard (`<Vault>/atlas-vtt/collections/{{ATLAS_COLLECTION}}/notes/`), and **(3)** any linked Session Prep note (`<Vault>/Sessions/`). Never leave stale or contradictory details between layers.
 
 ---
 
